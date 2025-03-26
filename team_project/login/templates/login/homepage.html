@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Log In</title>
+</head>
+
+<body>
+  <h1>Welcome to our Shelter!</h1>
+  <form action="" method="POST">
+    {% csrf_token %}
+    <input type="text" name="email" placeholder="Login with your email" required>
+    <input type="password" name="password" placeholder="Enter your password" required>
+    <button type="submit">Log In</button>
+  </form>
+</body>
+
+</html>
