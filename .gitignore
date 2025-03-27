@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Environment
+.env
+.venv/
+venv/
+env/
+ENV/
+*.env
+
+# Django
+*.log
+db.sqlite3
+media/
+staticfiles/
+static_root/
+local_settings.py
+
+# VSCode
+.vscode/
+
+# MacOS
+.DS_Store
+
+# PyCharm
+.idea/
+
+# Migrations (optional: if you want to exclude all migrations)
+# Comment this out if you want to keep migrations in version control
+# **/migrations/
+# **/migrations/*.py
+# **/migrations/*.pyc
+
+# Coverage
+htmlcov/
+.coverage
+.tox/
+.nox/
+
+# MyPy / Pyright / Pyre
+.mypy_cache/
+.pyright/
+.pyre/
+
+# pytest
+.pytest_cache/
+
+# Build
+build/
+dist/
+*.egg-info/
