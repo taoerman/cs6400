@@ -9,4 +9,4 @@
 >`pip install mysqlclient`
 
 # API
-    check apis.md for API specification
+[API specification](apis.md)

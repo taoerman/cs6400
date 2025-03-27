@@ -3,6 +3,7 @@
 [Dog](#Dog)
 [Expense](#Expense)
 [Adopter](#Adopter)
+[Adoption](#Adoption)
 ## User 
 
 ## GET /api/users
