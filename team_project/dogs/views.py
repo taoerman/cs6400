@@ -76,3 +76,59 @@ def get_dog_by_id(request, dog_id):
         return JsonResponse(dog, status=200)
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
+
+@csrf_exempt
+def edit_dog(request, dog_id):
+    if request.method != 'PUT':
+        return JsonResponse({'error' : 'Only PUT Allowed'}, status=405)
+
+    try:
+        data = json.loads((request.body))
+        new_sex = data.get('sex')
+        new_breed = json.dumps(data.get('breed'))
+        new_microchip = data.get('microchipID')
+
+        if new_sex not in ['Male', 'Female', 'Unknown']:
+            return JsonResponse({'error' : 'Invalid Syntax value'}, status=400)
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE Dog 
+                SET sex = %s, breed = %s, microchipID = %s
+                WHERE id = %s
+            """, [new_sex, new_breed, new_microchip, dog_id])
+
+        return JsonResponse({'message' : 'Dog updated successfully'})
+
+    except Exception as e:
+        return HttpResponseBadRequest(f"Error: {str(e)}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
