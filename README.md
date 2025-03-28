@@ -21,5 +21,14 @@
 
 ]
 
+## urls
+>http://127.0.0.1:8080/accounts/users/
+> 
+> http://127.0.0.1:8080/dogs/get_dog/1/
+> 
+> http://127.0.0.1:8080/dogs/get_all_dogs/
+> 
+> http://127.0.0.1:8080/dogs/edit_dog/1/
+
 # API
 [API specification](apis.md)
