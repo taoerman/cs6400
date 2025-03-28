@@ -14,6 +14,7 @@ class Command(BaseCommand):
                     lastName VARCHAR(100),
                     birthDate DATE,
                     phoneNumber VARCHAR(20),
-                    isExecutiveDirector BOOLEAN
+                    isExecutiveDirector BOOLEAN,
+                    password VARCHAR(255)
                 )
             """)

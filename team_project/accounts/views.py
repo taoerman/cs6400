@@ -72,9 +72,33 @@ def login_user(request):
             user = cursor.fetchone()
 
         if user:
+            # save userEmail in session, we will use this in login_status api
+            request.session['user_email'] = email
             return JsonResponse({'message': 'Login successful'}, status=200)
         else:
             return JsonResponse({'error': 'Invalid credentials'}, status=401)
 
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
+
+
+@csrf_exempt
+def logout_user(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST allowed'}, status=405)
+
+    try:
+        # Clear the session
+        request.session.flush()
+        return JsonResponse({'message': 'Logout successful'}, status=200)
+    except Exception as e:
+        return HttpResponseBadRequest(f"Error: {str(e)}")
+
+
+@csrf_exempt
+def login_status(request):
+    user_email = request.session.get("user_email")
+    if user_email:
+        return JsonResponse({'loggedIn': True, 'userEmail': user_email})
+    else:
+        return JsonResponse({'loggedIn': False})
