@@ -13,7 +13,7 @@
 
 ## Register the app in settings.py
 >team_project/settings.py
-> 
+>
 > INSTALLED_APPS = [
 
     ...,
