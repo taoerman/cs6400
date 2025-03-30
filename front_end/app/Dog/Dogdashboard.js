@@ -1,6 +1,14 @@
-export default async function Dog() {
-  const response = await fetch('http://localhost:8000/dogs');
-  const data = await response.json();
+import React, { useEffect, useState } from "react"
+export const Dogdashboard = () => {
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    async function loadData() {
+      const res = await fetch('http://localhost:8000/dogs'); 
+      const result = await res.json();
+      setData(result);
+    }
+    loadData();
+  }, []);
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full border border-gray-200 text-sm text-left">
