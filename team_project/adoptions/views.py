@@ -4,6 +4,7 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
 import json
+from datetime import date
 
 @csrf_exempt
 def add_adoption_application(request):
@@ -53,11 +54,6 @@ def add_adoption_application(request):
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
 
-from django.http import JsonResponse, HttpResponseBadRequest
-from django.views.decorators.csrf import csrf_exempt
-from django.db import connection
-import json
-from datetime import date
 
 @csrf_exempt
 def update_application_status(request):
