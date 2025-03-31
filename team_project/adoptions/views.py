@@ -96,3 +96,112 @@ def update_application_status(request):
 
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
+
+
+@csrf_exempt
+def review_pending_applications(request):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Only GET allowed'}, status=405)
+
+    # Check if current user is ED
+    ifnot request.session.get('isExecutiveDirector'):
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+
+    try:
+        with connection.cursor() as cursor:
+            # Join Application, Adopter, and Dog tables
+            cursor.execute("""
+                SELECT 
+                    A.applicationID,
+                    A.applicationDate,
+                    Ad.adopterID,
+                    Ad.firstName,
+                    Ad.lastName,
+                    D.id,
+                    D.name AS dogName,
+                    A.applicationStatus
+                FROM Application A
+                JOIN Adopter Ad ON A.adopterID = Ad.adopterID
+                JOIN Dog D ON A.dogID = D.id
+                WHERE A.applicationStatus = 'pending approval'
+                ORDER BY A.applicationDate ASC
+            """)
+            rows = cursor.fetchall()
+
+
+        results = []
+        for row in rows:
+            results.append({
+                'applicationID': row[0],
+                'applicationDate': str(row[1]),
+                'adopterID': row[2],
+                'adopterName': f"{row[3]} {row[4]}",
+                'dogID': row[5],
+                'dogName': row[6],
+                'status': row[7]
+            })
+
+        return JsonResponse({'applications': results}, status=200)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+def finalize_adoption(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST allowed'}, status=405)
+
+    if not request.session.get('isExecutiveDirector'):
+        return JsonResponse({'error': 'Only Executive Directors can finalize adoptions.'}, status=403)
+
+    try:
+        data = json.loads(request.body)
+        dogID = data.get('dogID')
+        adopterID = data.get('adopterID')
+
+        with connection.cursor() as cursor:
+            # Get total expenses
+            cursor.execute("""
+                SELECT SUM(expenseAmount)
+                FROM Expense
+                WHERE dogID = %s
+            """, [dogID])
+            total_expenses = cursor.fetchone()[0] or 0
+
+            # Check if dog is surrendered by animal control and get name, breed
+            cursor.execute("""
+                SELECT surrenderedByAnimalControl, name, breed
+                FROM Dog
+                WHERE id = %s
+            """, [dogID])
+            dog_row = cursor.fetchone()
+            if not dog_row:
+                return JsonResponse({'error': 'Dog not found.'}, status=404)
+
+            surrendered_by_ac, dog_name, dog_breed = dog_row
+
+            # Determine adoption fee
+            # If (name = ‘Sideways’ AND breed LIKE ‘%Terrier%’), the adopter fee is waived (but still stored)
+            if dog_name.lower() == 'sideways' and 'terrier' in dog_breed.lower():
+                fee = 0
+            elif surrendered_by_ac:
+                # If surrenderedByAnimalControl is true, fee = 10% of total expenses; else 125% of total.
+                fee = round(total_expenses * 0.10, 2)
+            else:
+                fee = round(total_expenses * 1.25, 2)
+
+            # Insert into Adoption table
+            cursor.execute("""
+                INSERT INTO Adoption (dogID, adopterID, adoptionDate, adoptionFee)
+                VALUES (%s, %s, CURRENT_DATE, %s)
+            """, [dogID, adopterID, fee])
+
+        return JsonResponse({
+            'message': 'Adoption finalized successfully',
+            'dogID': dogID,
+            'adopterID': adopterID,
+            'adoptionFee': fee
+        }, status=201)
+
+    except Exception as e:
+        return HttpResponseBadRequest(f"Error: {str(e)}")
