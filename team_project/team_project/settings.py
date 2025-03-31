@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'expenses',
     'adoptions',
     'rest_framework',
+    'report',
 ]
 
 MIDDLEWARE = [
