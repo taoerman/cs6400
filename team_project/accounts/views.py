@@ -73,7 +73,9 @@ def login_user(request):
 
         if user:
             # save userEmail in session, we will use this in login_status api
+            is_exec = user[5]
             request.session['user_email'] = email
+            request.session['isExecutiveDirector'] = is_exec
             return JsonResponse({'message': 'Login successful'}, status=200)
         else:
             return JsonResponse({'error': 'Invalid credentials'}, status=401)
