@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'accounts',
     'dogs',
     'expenses',
+    'adoptions',
     'rest_framework',
 ]
 
@@ -85,7 +86,7 @@ DATABASES = {
         'ENGINE': 'mysql.connector.django',
         'NAME': 'mydb',
         'USER': 'root',
-        'PASSWORD': '',
+        'PASSWORD': '1234Qwer',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
