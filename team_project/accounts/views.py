@@ -104,3 +104,79 @@ def login_status(request):
         return JsonResponse({'loggedIn': True, 'userEmail': user_email})
     else:
         return JsonResponse({'loggedIn': False})
+
+@csrf_exempt
+def volunteers(request):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Only GET allowed'}, status=405)
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT userEmail, firstName, lastName, phoneNumber
+                FROM User
+                WHERE isExecutiveDirector = FALSE
+            """)
+            rows = cursor.fetchall()
+
+        volunteer_list = []
+        for row in rows:
+            volunteer_list.append({
+                'userEmail': row[0],
+                'firstName': row[1],
+                'lastName': row[2],
+                'phoneNumber': row[3],
+            })
+
+        return JsonResponse({'volunteers': volunteer_list}, status=200)
+
+    except Exception as e:
+        return HttpResponseBadRequest(f"Error: {str(e)}")
+
+@csrf_exempt
+def volunteer_birthdays(request):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Only GET allowed'}, status=405)
+    # GET /accounts/volunteer_birthdays?month=03&year=2025
+
+    try:
+        month = request.GET.get('month')
+        year = request.GET.get('year')
+
+        if not month or not year:
+            return JsonResponse({'error': 'Missing month or year'}, status=400)
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT firstName, lastName, userEmail, birthDate
+                FROM User
+                WHERE isExecutiveDirector = 0
+                AND MONTH(birthDate) = %s
+                AND YEAR(birthDate) = %s
+            """, [month, year])
+
+            rows = cursor.fetchall()
+
+        if not rows:
+            return JsonResponse({'message': 'No birthdays this month.'}, status=200)
+
+        today = datetime.today()
+        volunteer_list = []
+        for row in rows:
+            birth_date = row[3]
+            age = today.year - birth_date.year
+            is_milestone = (age % 10 == 0)
+
+            volunteer_list.append({
+                'firstName': row[0],
+                'lastName': row[1],
+                'userEmail': row[2],
+                'birthDate': birth_date.strftime('%Y-%m-%d'),
+                'age': age,
+                'milestone': is_milestone,
+            })
+
+        return JsonResponse({'volunteers': volunteer_list}, status=200)
+
+    except Exception as e:
+        return HttpResponseBadRequest(f"Error: {str(e)}")

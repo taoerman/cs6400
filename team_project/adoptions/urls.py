@@ -6,6 +6,6 @@ urlpatterns = [
     path('adoptions/update_application_status/', views.update_application_status),
     path('adoptions/add_adoption_application/', views.add_adoption_application),
     path('adoptions/review_pending_applications/', views.review_pending_applications),
-    path('adoptions/review_pending_applications/', views.finalize_adoption),
+    path('adoptions/finalize_adoption/', views.finalize_adoption),
 
 ]
