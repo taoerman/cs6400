@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'accounts',
     'dogs',
     'expenses',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
