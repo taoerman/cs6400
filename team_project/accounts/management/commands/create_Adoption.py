@@ -11,8 +11,8 @@ class Command(BaseCommand):
                                 adoptionID INT AUTO_INCREMENT PRIMARY KEY,
                                 dogID INT NOT NULL,
                                 adopterID INT NOT NULL,
-                                applicationStatus VARCHAR(20) NOT NULL CHECK (applicationStatus IN ('pending approval', 'approved', 'rejected')),
-                                startDate DATE NOT NULL,
+                                adoptionFee DECIMAL(10, 2) NOT NULL,
+                                AdoptionDate DATE NOT NULL,
                                 FOREIGN KEY (dogID) REFERENCES Dog(id),
                                 FOREIGN KEY (adopterID) REFERENCES Adopter(adopterID)
                             );
