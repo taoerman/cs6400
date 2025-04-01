@@ -2,7 +2,16 @@ import React from "react";
 import styles from './dogdetail.module.css'
 import { useView } from '@/contexts/ViewContext';
 export const DogDetail = () => {
-    const { setCurrentView, currentView } = useView();
+    const { setCurrentView, currentView, dogId, setDogId } = useView();
+    const [data, setData] = useState([]);
+    useEffect(() => {
+        async function loadData() {
+          const res = await fetch('http://localhost:8080/dogs/get_dog/'+dogId); 
+          const result = await res.json();
+          setData(result);
+        }
+        loadData();
+      }, []);
     const handleClick = (num) => {
       setCurrentView(num)
     }
