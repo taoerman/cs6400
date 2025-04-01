@@ -100,7 +100,7 @@ def review_pending_applications(request):
         return JsonResponse({'error': 'Only GET allowed'}, status=405)
 
     # Check if current user is ED
-    ifnot request.session.get('isExecutiveDirector'):
+    if not request.session.get('isExecutiveDirector'):
         return JsonResponse({'error': 'Permission denied'}, status=403)
 
     try:
