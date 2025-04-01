@@ -3,6 +3,7 @@ import hashlib
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.db import connection
+from datetime import datetime
 
 
 def get_users(request):

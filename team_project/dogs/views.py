@@ -47,6 +47,17 @@ def add_dog(request):
         breed_json = json.dumps(breed)
 
         with connection.cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) FROM Dog")
+            total_dogs = cursor.fetchone()[0]
+
+            cursor.execute("SELECT COUNT(*) FROM Adoption")
+            adopted_dogs = cursor.fetchone()[0]
+
+            current_in_shelter = total_dogs - adopted_dogs
+
+            if current_in_shelter > 15:
+                return JsonResponse({'error': 'Dog shelter is full (max 15 dogs)'}, status=400)
+
             cursor.execute("""
                 INSERT INTO Dog (name, breed, sex, altered, ageForMonths, description,
                     microchipID, microchipVendor, surrenderedByAnimalControl,
