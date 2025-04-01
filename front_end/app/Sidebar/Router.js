@@ -9,7 +9,8 @@ export const Router = () => {
       <Route title="Expenses" num = {4}/>
       <Route title="Adoption" num = {5}/>
       <Route title="Report" num = {6}/>
-      <Route title="Volunteer" num = {7}/>
+      <Route title="DrillDown" num = {7}/>
+      <Route title="Volunteer" num = {8}/>
     </div>
   );
 };
