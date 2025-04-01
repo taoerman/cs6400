@@ -7,6 +7,7 @@ import { Expense } from "../Expense/Expense";
 import { Adoption } from "../Adoption/Adoption";
 import { useView } from '@/contexts/ViewContext';
 import { Report } from "../Report/Report";
+import { Volunteer } from "../Volunteer/Volunteer";
 export const Dashboard = () => {
   const { currentView } = useView();
   const renderView = () => {
@@ -17,6 +18,7 @@ export const Dashboard = () => {
       case 4: return <Expense />;
       case 5: return <Adoption />;
       case 6: return <Report />;
+      case 7: return <Volunteer />;
       default: return null;
     }
   };

@@ -6,10 +6,10 @@ export const Router = () => {
     <div className="space-y-1">
       <Route title="Dog Dashboard" num = {1}/>
       <Route title="Add Dog" num = {2}/>
-      <Route title="Dog Details" num = {3}/>
       <Route title="Expenses" num = {4}/>
       <Route title="Adoption" num = {5}/>
       <Route title="Report" num = {6}/>
+      <Route title="Volunteer" num = {7}/>
     </div>
   );
 };
