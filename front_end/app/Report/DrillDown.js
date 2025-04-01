@@ -1,14 +1,19 @@
 import React from "react";
 import styles from "./drilldown.module.css"
+import { useView } from '@/contexts/ViewContext';
 export const DrillDown = () => {
+    const { setCurrentView, currentView } = useView();
+    const handleClick = (num) => {
+        setCurrentView(num)
+      }    
     return (
         <main className={styles["main-content"]}>
         <div className={styles["dashboard-header"]}>
           <h1 className={styles["page-title"]}>March 2024</h1>
           <div className={styles["dashboard-actions"]}>
-            <a href="executor-report.html" className={`${styles["action-btn"]} ${styles["secondary-btn"]}`}>
+            <button onClick = {()=>handleClick(6)} className={`${styles["action-btn"]} ${styles["secondary-btn"]}`}>
               Back to Report
-            </a>
+            </button>
           </div>
         </div>
   

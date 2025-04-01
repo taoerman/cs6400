@@ -1,8 +1,13 @@
 import React from "react";
 import styles from "./report.module.css"
+import { useView } from '@/contexts/ViewContext';
 export const Report = () => {
     const [page, setPage] = React.useState(1)
-
+    const { setCurrentView, currentView } = useView();
+    const handleClick = (e, num) => {
+        e.preventDefault()
+        setCurrentView(num)
+      }    
     return (
         <main className={styles["main-content"]}>
         <div className={styles["dashboard-header"]}>
@@ -47,7 +52,7 @@ export const Report = () => {
                     <tr key={month}>
                       <td>
                         <a
-                          href={`drill-down.html?month=${m}&year=${y}`}
+                          onClick = {(e)=>handleClick(e, 7)}
                           className={styles["month-link"]}
                         >
                           {month}
