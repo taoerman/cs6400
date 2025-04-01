@@ -71,7 +71,7 @@ export const Dogdashboard = () => {
                 <tbody>
                   {
                     data.map((dog)=>{ return (
-                    <tr>
+                    <tr key={dog.dog_ID}>
                         <td>{dog.name}</td>
                         <td>{dog.breed? JSON.parse(dog.breed).join(', ') : ''}</td>
                         <td>{dog.sex}</td>

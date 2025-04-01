@@ -1,12 +1,17 @@
 import React from "react";
 import styles from "./expense.module.css"
+import { useView } from '@/contexts/ViewContext';
 export const Expense = () => {
+    const { setCurrentView, currentView } = useView();
+    const handleClick = (num) => {
+      setCurrentView(num)
+    }    
     return (
         <main className={styles["main-content"]}>
         <div className={styles["dashboard-header"]}>
             <h1 className={styles["page-title"]}>Add Expense</h1>
             <div className={styles["dashboard-actions"]}>
-                <button href="dog-detail.html" className={styles["secondary-btn"]}>Back to Dog Details</button>
+                <button onClick = {()=>handleClick(3)} className={styles["secondary-btn"]}>Back to Dog Details</button>
             </div>
         </div>
 
@@ -56,8 +61,8 @@ export const Expense = () => {
                 </div>
 
                 <div className={styles["form-actions"]}>
-                    <button type="button" className={styles["secondary-btn"]} 
-                            onclick="window.location.href='dog-detail.html'">Cancel</button>
+                    <button onClick = {()=>handleClick(3)} type="button" className={styles["secondary-btn"]} 
+                            >Cancel</button>
                     <button type="submit" className={styles["primary-btn"]}>Save Expense</button>
                 </div>
             </form>

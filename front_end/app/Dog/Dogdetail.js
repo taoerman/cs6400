@@ -1,12 +1,17 @@
 import React from "react";
 import styles from './dogdetail.module.css'
+import { useView } from '@/contexts/ViewContext';
 export const DogDetail = () => {
+    const { setCurrentView, currentView } = useView();
+    const handleClick = (num) => {
+      setCurrentView(num)
+    }
     return (
         <main className={styles["main-content"]}>
         <div className={styles["dashboard-header"]}>
             <h1 className={styles["page-title"]}>Dog Details</h1>
             <div className={styles["dashboard-actions"]}>
-                <button className={styles["secondary-btn"]}>Back to Dashboard</button>
+                <button onClick = {()=>handleClick(1)} className={styles["secondary-btn"]}>Back to Dashboard</button>
             </div>
         </div>
 
@@ -114,12 +119,12 @@ export const DogDetail = () => {
             </div>
 
             <div className={styles["detail-actions"]}>
-                <a href="add-expense.html" className={styles["secondary-btn"]}>
+                <button onClick = {()=>handleClick(4)} className={styles["secondary-btn"]}>
                     Add Expense
-                </a>
-                <a href="adoption-application.html" className={styles["primary-btn"]}>
+                </button>
+                <button onClick = {()=>handleClick(5)} className={styles["primary-btn"]}>
                     Add Adoption
-                </a>
+                </button>
             </div>
         </div>
     </main>

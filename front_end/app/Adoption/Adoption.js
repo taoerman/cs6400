@@ -1,10 +1,11 @@
 import React from "react";
 import styles from "./adopt.module.css"
+import { useView } from '@/contexts/ViewContext';
 export const Adoption = () => {
-    const handleCancel = () => {
-        window.location.href = "dog-detail.html";
-      };
-    
+    const { setCurrentView, currentView } = useView();
+    const handleClick = (num) => {
+        setCurrentView(num)
+      }    
       const handleSubmit = (e) => {
         e.preventDefault();
         // handle form submission logic here
@@ -14,9 +15,9 @@ export const Adoption = () => {
         <div className={styles["dashboard-header"]}>
           <h1 className={styles["page-title"]}>Adoption Application</h1>
           <div className={styles["dashboard-actions"]}>
-            <a href="dog-detail.html" className={styles["action-btn"] + " " + styles["secondary-btn"]}>
+            <button onClick = {()=>handleClick(3)} className={styles["action-btn"] + " " + styles["secondary-btn"]}>
               Back to Dog Details
-            </a>
+            </button>
           </div>
         </div>
   
@@ -148,7 +149,7 @@ export const Adoption = () => {
               <button
                 type="button"
                 className={`${styles["action-btn"]} ${styles["secondary-btn"]}`}
-                onClick={handleCancel}
+                onClick={()=>handleClick(3)}
               >
                 Cancel
               </button>
