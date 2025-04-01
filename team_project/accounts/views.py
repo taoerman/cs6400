@@ -13,11 +13,6 @@ def get_users(request):
         rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
     return JsonResponse(rows, safe=False)
 
-
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
-
-
 # we use postman test API, @csrf_exempt has to be included.
 @csrf_exempt
 def register_user(request):
@@ -35,7 +30,7 @@ def register_user(request):
         birth = data['birthDate']
         phone = data['phoneNumber']
         is_exec = data['isExecutiveDirector']
-        password = hash_password(data['password'])
+        password = data['password']
 
         # Use raw sql query to check whether user already exists
         with connection.cursor() as cursor:
@@ -64,7 +59,7 @@ def login_user(request):
     try:
         data = json.loads(request.body)
         email = data['userEmail']
-        password = hash_password(data['password'])
+        password = data['password']
 
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -87,8 +82,8 @@ def login_user(request):
 
 @csrf_exempt
 def logout_user(request):
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Only POST allowed'}, status=405)
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Only GET allowed'}, status=405)
 
     try:
         # Clear the session

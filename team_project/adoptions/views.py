@@ -2,9 +2,11 @@
 
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
+from django.db import IntegrityError
 from django.db import connection
 import json
 from datetime import date
+from decimal import Decimal
 
 @csrf_exempt
 def add_adoption_application(request):
@@ -24,6 +26,7 @@ def add_adoption_application(request):
         phoneNumber = data['phoneNumber']
         householdSize = data['householdSize']
         applicationDate = data['applicationDate']
+        dogID = data['dogID']
 
         with connection.cursor() as cursor:
             # Check if adopter exists
@@ -43,9 +46,9 @@ def add_adoption_application(request):
             # UNIQUE (adopterID, applicationDate) to ensure only one application per adopter per day
             try:
                 cursor.execute("""
-                                   INSERT INTO Application (adopterID, applicationDate, applicationStatus)
-                                   VALUES (%s, %s, 'pending approval')
-                               """, [adopterID, applicationDate])
+                                   INSERT INTO Application (adopterID,  dogID, applicationDate, applicationStatus)
+                                   VALUES (%s, %s, %s, 'pending approval')
+                               """, [adopterID, dogID, applicationDate])
             except IntegrityError:
                 return HttpResponseBadRequest("One application per adopter per day.")
 
@@ -156,13 +159,23 @@ def finalize_adoption(request):
         adopterID = data.get('adopterID')
 
         with connection.cursor() as cursor:
+            cursor.execute("""
+                            SELECT applicationID FROM Application
+                            WHERE dogID = %s AND adopterID = %s AND applicationStatus = 'approved'
+                        """, [dogID, adopterID])
+            approved_app = cursor.fetchone()
+
+            if not approved_app:
+                return JsonResponse({'error': 'No approved application found for this dog and adopter.'}, status=403)
+
             # Get total expenses
             cursor.execute("""
                 SELECT SUM(expenseAmount)
                 FROM Expense
                 WHERE dogID = %s
             """, [dogID])
-            total_expenses = cursor.fetchone()[0] or 0
+            result = cursor.fetchone()[0]
+            total_expenses = float(result) if result is not None else 0.0
 
             # Check if dog is surrendered by animal control and get name, breed
             cursor.execute("""

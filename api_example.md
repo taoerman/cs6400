@@ -283,5 +283,166 @@ request example: {
       "microchipID": "987654321"
 }
 
+## adoptions
+### add_adoption_application
+url: http://127.0.0.1:8080/adoptions/add_adoption_application/
+
+method: POST
+
+request example: {
+
+      "adopterEmail": "jane.doe@example.com",
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "street": "123 Oak St",
+      "city": "Atlanta",
+      "state": "GA",
+      "zipCode": "30332",
+      "phoneNumber": "555-222-1234",
+      "householdSize": 3,
+      "applicationDate": "2025-03-27",
+      "dogID": 5
+}
+
+### review_pending_applications
+url: http://127.0.0.1:8080/adoptions/review_pending_applications/
+
+method: GET
+
+response example: {
+    "error": "Permission denied"
+}
+
+{
+    "applications": [
+
+        {
+            "applicationID": 1,
+            "applicationDate": "2025-03-27",
+            "adopterID": 1,
+            "adopterName": "Jane Doe",
+            "dogID": 5,
+            "dogName": "Max",
+            "status": "pending approval"
+        }
+    ]
+}
+
+### update_application_status
+url: http://127.0.0.1:8080/adoptions/rupdate_application_status/
+
+method: POST
+
+request example: {
+
+      "applicationID": 1,
+      "applicationStatus": "approved"
+}
+
+### finalize_adoption
+url:  http://127.0.0.1:8080/adoptions/finalize_adoption/
+
+method: POST
+
+request example: {
+
+      "dogID": 5,
+      "adopterID": 1
+}
+
+response example:{
+
+    "message": "Adoption finalized successfully",
+    "dogID": 5,
+    "adopterID": 1,
+    "adoptionFee": 112.49
+}
+
+## expenses
+### get_all_expenses
+url: http://127.0.0.1:8080/expenses/get_all_expenses/
+
+method: GET
+
+response example: [
+    {
+
+        "expenseID": 1,
+        "dogID": 5,
+        "expenseDate": "2025-04-01",
+        "expenseVendor": "Paws Vet Clinic",
+        "expenseCategory": "[\"medical\", \"vaccination\"]",
+        "expenseAmount": "89.99"
+    }
+]
+
+### add_expense
+url:  http://127.0.0.1:8080/expenses/add_expense/
+
+method: POST
+
+request example: {
+
+      "dogID": 5,
+      "expenseDate": "2025-04-01",
+      "expenseVendor": "Paws Vet Clinic",
+      "expenseCategory": ["medical", "vaccination"],
+      "expenseAmount": 89.99
+}
+
+## report
+### animal_control_report
+url: http://127.0.0.1:8080/report/animal_control_report/
+
+method: GET
+
+response example:{
+
+    "data": [
+        {
+            "month": 4,
+            "totalSurrendered": 1,
+            "adoptedAfter60Days": "0",
+            "totalExpenses": 0.0
+        }
+    ]
+}
+
+### monthly_adoption_report
+url:  http://127.0.0.1:8080/report/monthly_adoption_report/
+
+method: GET
+
+response example:{
+
+    "data": [
+        {
+            "month": 4,
+            "totalAdopted": 1,
+            "totalFees": 112.49,
+            "totalExpenses": 89.99,
+            "netProfit": 22.5
+        }
+    ]
+}
+
+### expense_analysis
+url: http://127.0.0.1:8080/report/expense_analysis/
+
+method: GET
+
+response example:{
+
+    "data": [
+        {
+            "expenseVendor": "Paws Vet Clinic",
+            "totalSpent": 89.99
+        }
+    ]
+}
+
+
+
+
 
 
