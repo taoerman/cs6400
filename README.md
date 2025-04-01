@@ -32,3 +32,6 @@
 
 # API
 [API specification](apis.md)
+
+# API Example
+[example](api_example.md)
