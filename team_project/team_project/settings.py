@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'adoptions',
     'rest_framework',
     'report',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -56,7 +57,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'team_project.urls'
 
@@ -87,7 +91,7 @@ DATABASES = {
         'ENGINE': 'mysql.connector.django',
         'NAME': 'mydb',
         'USER': 'root',
-        'PASSWORD': '1234Qwer',
+        'PASSWORD': '',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }

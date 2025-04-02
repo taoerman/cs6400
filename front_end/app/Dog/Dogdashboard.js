@@ -3,6 +3,7 @@ import styles from './dogdashboard.module.css'
 import { useView } from '@/contexts/ViewContext';
 export const Dogdashboard = () => {
   const [data, setData] = useState([]);
+  const [filter, setFilter] = useState('all');
   useEffect(() => {
     async function loadData() {
       const res = await fetch('http://127.0.0.1:8000/dogs/get_all_dogs/');
@@ -16,11 +17,18 @@ export const Dogdashboard = () => {
     setCurrentView(num)
   }
   const checkAdoptable = (dog) => {
-    if (dog.altered && dog.microchip_ID)
+    if (dog.altered && dog.microchipID != null)
       return 'Yes'
     else
       return 'No'
   }
+
+  const filteredData = data.filter(dog => {
+    if (filter === 'all') return true;
+    const isAdoptable = dog.altered && dog.microchipID != null;
+    return filter === 'adoptable' ? isAdoptable : !isAdoptable;
+  });
+
   return (
     <main className={styles["main-content"]}>
       <div className={styles["dashboard-header"]}>
@@ -35,7 +43,9 @@ export const Dogdashboard = () => {
         <div className={styles["controls-wrapper"]}>
           <div className={styles["filter-group"]}>
             <label>Filter by Status:</label>
-            <select id="adoptabilityFilter" className={styles["filter-dropdown"]}>
+            <select id="adoptabilityFilter" className={styles["filter-dropdown"]}
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}>
               <option value="all">All Dogs</option>
               <option value="adoptable">Adoptable</option>
               <option value="not-adoptable">Not Adoptable</option>
@@ -65,12 +75,13 @@ export const Dogdashboard = () => {
               <th>Age For Months</th>
               <th>Adoptable</th>
               <th>Shelter</th>
+              <th>Microchip ID</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {
-              data.map((dog) => {
+              filteredData.map((dog) => {
                 return (
                   <tr key={dog.id}>
                     <td>{dog.name}</td>
@@ -80,6 +91,7 @@ export const Dogdashboard = () => {
                     <td>{dog.ageForMonths}</td>
                     <td>{checkAdoptable(dog)}</td>
                     <td>{dog.shelter ?? ''}</td>
+                    <td>{dog.microchipID}</td>
                     <td>
                       <button onClick={() => handleClick(3)} className={styles["detail-link"]}>Details</button>
                     </td>
