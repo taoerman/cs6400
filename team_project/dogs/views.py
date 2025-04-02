@@ -22,14 +22,16 @@ def add_dog(request):
 
     try:
         data = json.loads(request.body)
-
         # Extract fields
         name = data['name']
-        breed = data['breed']  # assumed to be a list of strings
-        sex = data.get('sex', 'Unknown')
-        altered = data['altered']
+        breed = json.dumps(data['breed'])
+        sex = data.get('sex', 'Unknown').capitalize()
+        print(sex)
+        altered = 1 if data['altered'] else 0
+        print(altered)
         age = data['ageForMonths']
-        surrendered_by_control = data['surrenderedByAnimalControl']
+        surrendered_by_control = 1 if data['surrenderedByAnimalControl'] else 0
+        print(surrendered_by_control)
         surrender_phone = data.get('surrenderPhone')
         microchip_id = data.get('microchipID')
         microchip_vendor = data.get('microchipVendor')
@@ -44,7 +46,7 @@ def add_dog(request):
             return JsonResponse({'error': 'Bulldogs named Uga are not allowed'}, status=400)
 
         # Convert breed list to JSON string
-        breed_json = json.dumps(breed)
+        # breed_json = json.dumps(breed)
 
         with connection.cursor() as cursor:
             cursor.execute("SELECT COUNT(*) FROM Dog")
@@ -64,7 +66,7 @@ def add_dog(request):
                     surrenderPhone, surrenderDate)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_DATE)
             """, [
-                name, breed_json, sex, altered, age, description,
+                name, breed, sex, altered, age, description,
                 microchip_id, microchip_vendor, surrendered_by_control, surrender_phone
             ])
 
@@ -104,7 +106,7 @@ def edit_dog(request, dog_id):
 
         with connection.cursor() as cursor:
             cursor.execute("""
-                UPDATE Dog 
+                UPDATE Dog
                 SET sex = %s, breed = %s, microchipID = %s
                 WHERE id = %s
             """, [new_sex, new_breed, new_microchip, dog_id])
