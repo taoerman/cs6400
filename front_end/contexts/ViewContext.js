@@ -6,9 +6,10 @@ const ViewContext = createContext();
 
 export const ViewProvider = ({ children }) => {
   const [currentView, setCurrentView] = useState(1);
+  const [dogId, setDogId] = useState(1);
 
   return (
-    <ViewContext.Provider value={{ currentView, setCurrentView }}>
+    <ViewContext.Provider value={{ currentView, setCurrentView, dogId, setDogId }}>
       {children}
     </ViewContext.Provider>
   );

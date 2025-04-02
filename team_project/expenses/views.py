@@ -22,16 +22,17 @@ def add_expense(request):
         return JsonResponse({'error' : {'Only POST Allowed'}})
 
     try:
-        data = json.load(request.body)
-        dogID = data['dodID']
+        data = json.loads(request.body)
+        dogID = data['dogID']
         expenseDate = data['expenseDate']
         expenseVendor = data['expenseVendor']
-        expenseCategory = json.dumps(data['expenseCategory'])
+        expenseCategory = data['expenseCategory']
         expenseAmount = data['expenseAmount']
 
         # List of categories; values must be from the admin-controlled category list
         if not isinstance(expenseCategory, list):
             return HttpResponseBadRequest("expenseCategory must be a list")
+        expenseCategory_json = json.dumps(expenseCategory)
 
         # Expense amount (must be ≥ 0.00)
         if float(expenseAmount) < 0:
@@ -60,7 +61,7 @@ def add_expense(request):
             # Validate expenseDate is ≥ dog’s surrenderDate and ≤ dog’s adoptionDate if adopted.
             if expense_date < surrenderDate:
                 return HttpResponseBadRequest("Expense date must be on or after surrenderDate")
-            if expense_date > adoptionDate:
+            if adoptionDate and expense_date > adoptionDate:
                 return HttpResponseBadRequest("Expense date must be on or before adoptionDate")
 
             # Check no duplicate expense (same dog, same date, same vendor).
