@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./adopt.module.css"
+import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
 export const Adoption = () => {
     const { setCurrentView, currentView } = useView();
