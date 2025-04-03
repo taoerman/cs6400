@@ -2,12 +2,13 @@
 import React from "react";
 import { useView } from '@/contexts/ViewContext';
 export const Router = () => {
+  const [userType, setUserType] = useView();
   return (
     <div className="space-y-1">
       <Route title="Dog Dashboard" num = {1}/>
       <Route title="Add Dog" num = {2}/>
       <Route title="Expenses" num = {4}/>
-      <Route title="Adoption" num = {5}/>
+      <Route title="Add Adoption" num = {5}/>
       <Route title="Report" num = {6}/>
       <Route title="DrillDown" num = {7}/>
       <Route title="Volunteer" num = {8}/>

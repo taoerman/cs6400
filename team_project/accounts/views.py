@@ -6,9 +6,9 @@ from django.db import connection
 from datetime import datetime
 
 
-def get_users(request):
+def get_users(request, email):
     with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM User")
+        cursor.execute("SELECT * FROM User where userEmail = %s", [email])
         columns = [col[0] for col in cursor.description]
         rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
     return JsonResponse(rows, safe=False)
