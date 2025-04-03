@@ -358,6 +358,22 @@ response example:{
     "adoptionFee": 112.49
 }
 
+### get_all_adoptions
+url:  http://127.0.0.1:8080/adoptions/get_all_adoptions/
+
+method: GET
+
+response example: [
+
+    {
+        "adoptionID": 1,
+        "dogID": 5,
+        "adopterID": 1,
+        "adoptionFee": "112.49",
+        "AdoptionDate": "2025-04-01"
+    }
+]
+
 ## expenses
 ### get_all_expenses
 url: http://127.0.0.1:8080/expenses/get_all_expenses/
