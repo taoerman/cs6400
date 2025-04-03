@@ -15,6 +15,7 @@ def add_adoption_application(request):
 
     try:
         data = json.loads(request.body)
+        print("data get from frontend: ", data)
 
         adopterEmail = data['adopterEmail']
         firstName = data['firstName']
@@ -110,7 +111,7 @@ def review_pending_applications(request):
         with connection.cursor() as cursor:
             # Join Application, Adopter, and Dog tables
             cursor.execute("""
-                SELECT 
+                SELECT
                     A.applicationID,
                     A.applicationDate,
                     Ad.adopterID,
