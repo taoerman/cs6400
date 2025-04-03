@@ -8,13 +8,13 @@ import { Login } from './Login/login'
 export default function Home() {
   const [ login, setLogin ] = useState(1)
   const setUserType = (email) => {
-    fetch('http://127.0.0.1:8080/accounts/users/'+email).then((data)=>data.json()).then((user)=>{
+    fetch('http://127.0.0.1:8080/accounts/users/?email='+email).then((data)=>data.json()).then((user)=>{
       if(user.isExecutiveDirector){ 
-      setCookie('loginType', loginType)
+      setCookie('loginType', 3)
       setLogin(3)
       }
       else{
-      setCookie('loginType', loginType)
+      setCookie('loginType', 2)
       setLogin(2)
       }
     })
@@ -31,7 +31,7 @@ export default function Home() {
     }
     fetch('http://127.0.0.1:8080/accounts/login/', {
       method:'POST',
-      body: body
+      body: JSON.stringify(body)
     }).then((data)=>data.json()).then(()=>{
       setCookie('userEmail', email)
       setUserType(email)})
