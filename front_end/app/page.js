@@ -36,11 +36,16 @@ export default function Home() {
       setCookie('userEmail', email)
       setUserType(email)})
   }
+  const handleLogout = () => {
+    setCookie('loginType','',-1)
+    setCookie('userEmail','',-1)
+    setLogin(1)
+  }
   return (
     <ViewProvider>
     { login === 1 ? <Login handler = {handleLogin} />:(
     <main className="grid gap-4 p-4 grid-cols-[200px_1fr]">
-      <Sidebar type = {login}/>
+      <Sidebar logout = {handleLogout} />
       <Dashboard />
     </main>)}
     </ViewProvider>
