@@ -7,13 +7,13 @@ export const AdoptionReview = () => {
         async function loadData() {
           const res = await fetch('http://127.0.0.1:8000/adoptions/review_pending_applications/');
           const result = await res.json();
-          setData(result);
+          setData(result.applications);
         }
         loadData();
       }, []);
     const handleClick = async (type, appid) => {
         const body = {applicationID: appid, applicationStatus: type === 1?"approved":"rejected"}
-        const res = await fetch('http://127.0.0.1:8000/adoptions/review_pending_applications/',{method:'POST', body:JSON.stringify(body)});
+        const res = await fetch('http://127.0.0.1:8000/adoptions/update_application_status/',{method:'POST', body:JSON.stringify(body)});
         setData(data.filter((item)=>item.applicationID!==appid))
     }
     return (
@@ -37,11 +37,12 @@ export const AdoptionReview = () => {
             </thead>
             <tbody>
               {
-                data.map((item, index) => {
+                data.map((item) => {
                   return (
                     <tr key={item.applicationID}>
+                      <td>{item.applicationID}</td>
                       <td>{item.dogID}</td>
-                      <td>{item.firstName} {item.lastName}</td>
+                      <td>{item.adopterName}</td>
                       <td>{item.dogName}</td>
                       <td>{item.adopterEmail}</td>
                       <td>{item.phoneNumber}</td>
