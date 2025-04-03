@@ -12,6 +12,7 @@ export const Router = () => {
       <Route title="Add Dog" num = {2}/>
       <Route title="Expenses" num = {4}/>
       <Route title="Add Adoption" num = {5}/>
+      <Route title="Adoption Review" num = {9}/>
       <Route title="Report" num = {6}/>
       <Route title="DrillDown" num = {7}/>
       <Route title="Volunteer" num = {8}/>

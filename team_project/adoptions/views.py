@@ -118,7 +118,9 @@ def review_pending_applications(request):
                     Ad.lastName,
                     D.id,
                     D.name AS dogName,
-                    A.applicationStatus
+                    A.applicationStatus,
+                    Ad.adopterEmail,
+                    Ad.phoneNumber
                 FROM Application A
                 JOIN Adopter Ad ON A.adopterID = Ad.adopterID
                 JOIN Dog D ON A.dogID = D.id
