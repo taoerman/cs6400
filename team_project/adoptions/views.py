@@ -36,6 +36,7 @@ def add_adoption_application(request):
 
             if row:
                 adopterID = row[0]
+                print("1")
             else:
                 # Insert new adopter
                 cursor.execute("""

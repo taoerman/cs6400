@@ -86,7 +86,7 @@ export const Adoption = () => {
               </div>
               <div className={styles["form-group"]}>
                 <label htmlFor="email">Email*</label>
-                <input type="adopterEmail" id="adopterEmail" name="email" onChange={handleChange} required />
+                <input type="adopterEmail" id="adopterEmail" name="adopterEmail" onChange={handleChange} required />
               </div>
               <div className={styles["form-group"]}>
                 <label htmlFor="phone">Phone Number*</label>
