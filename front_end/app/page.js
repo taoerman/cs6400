@@ -9,7 +9,7 @@ export default function Home() {
   const [ login, setLogin ] = useState(1)
   const setUserType = (email) => {
     fetch('http://127.0.0.1:8080/accounts/users/?email='+email).then((data)=>data.json()).then((user)=>{
-      if(user.isExecutiveDirector){ 
+      if(user[0].isExecutiveDirector){ 
       setCookie('loginType', 3)
       setLogin(3)
       }
