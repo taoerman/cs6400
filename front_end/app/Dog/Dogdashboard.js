@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import styles from './dogdashboard.module.css'
+import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
 export const Dogdashboard = () => {
   const [data, setData] = useState([]);

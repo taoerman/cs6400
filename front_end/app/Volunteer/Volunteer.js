@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./volunteer.module.css";
+import styles from "@/app/styles.module.css"
 
 export const Volunteer = () => {
     const [page, setPage] = React.useState(1)

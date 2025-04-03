@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import styles from './login.module.css'
+import styles from "@/app/styles.module.css"
 export const Login = (props) => {
     const { handler } = props
     const [ email, setEmail ] = useState('')
