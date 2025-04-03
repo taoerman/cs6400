@@ -12,7 +12,7 @@ export const Dogdashboard = () => {
     }
     loadData();
   }, []);
-  const { setCurrentView, currentView } = useView();
+  const { setCurrentView, currentView, dogId, setDogId } = useView();
   const handleClick = (num) => {
     setCurrentView(num)
   }
@@ -93,7 +93,11 @@ export const Dogdashboard = () => {
                     <td>{dog.shelter ?? ''}</td>
                     <td>{dog.microchipID}</td>
                     <td>
-                      <button onClick={() => handleClick(3)} className={styles["detail-link"]}>Details</button>
+                      <button onClick={() => {
+                        handleClick(3);
+                        setDogId(dog.id);
+                      }}
+                        className={styles["detail-link"]}>Details</button>
                     </td>
                   </tr>
                 )
@@ -102,6 +106,6 @@ export const Dogdashboard = () => {
           </tbody>
         </table>
       </div>
-    </main>
+    </main >
   )
 }
