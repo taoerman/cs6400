@@ -219,3 +219,23 @@ def finalize_adoption(request):
 
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
+
+@csrf_exempt
+def get_all_adoptions(request):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Only GET allowed'}, status=405)
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM Adoption")
+            rows = cursor.fetchall()
+
+            # Get column names
+            columns = [col[0] for col in cursor.description]
+
+            # Convert rows to list of dicts
+            result = [dict(zip(columns, row)) for row in rows]
+
+        return JsonResponse(result, safe=False)
+
+    except Exception as e:
+        return HttpResponseBadRequest(f"Error: {str(e)}")
