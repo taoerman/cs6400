@@ -7,6 +7,7 @@ import { setCookie, getCookie } from "./utils";
 import { Login } from './Login/login'
 export default function Home() {
   const [login, setLogin] = useState(1)
+  const [userEmail, setUserEmail] = useState('');
   const setUserType = (email) => {
     fetch('http://127.0.0.1:8000/accounts/users/?email=' + email).then((data) => data.json()).then((user) => {
       if (user[0].isExecutiveDirector) {
@@ -41,6 +42,7 @@ export default function Home() {
       const data = await response.json();
       localStorage.setItem('token', data.token);
       setCookie('userEmail', email);
+      setUserEmail(email);
       setUserType(email);
     } catch (error) {
       console.error('Login error:', error);
@@ -63,7 +65,7 @@ export default function Home() {
     <ViewProvider>
       {login === 1 ? <Login handler={handleLogin} /> : (
         <main className="grid gap-4 p-4 grid-cols-[200px_1fr]">
-          <Sidebar logout={handleLogout} />
+          <Sidebar email={userEmail} logout={handleLogout} />
           <Dashboard />
         </main>)}
     </ViewProvider>

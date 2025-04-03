@@ -35,7 +35,6 @@ export const Dogdashboard = () => {
         <h1 className={styles["page-title"]}>Dog Dashboard</h1>
         <div className={styles["dashboard-actions"]}>
           <button onClick={() => handleClick(2)} className={styles["primary-btn"]}>Add New Dog</button>
-          <button onClick={() => handleClick(5)} className={styles["secondary-btn"]}>Adoption Application</button>
         </div>
       </div>
 
@@ -74,9 +73,9 @@ export const Dogdashboard = () => {
               <th>Altered</th>
               <th>Age For Months</th>
               <th>Adoptable</th>
-              <th>Shelter</th>
               <th>Microchip ID</th>
               <th>Actions</th>
+              <th>Application</th>
             </tr>
           </thead>
           <tbody>
@@ -90,7 +89,6 @@ export const Dogdashboard = () => {
                     <td>{dog.altered ? 'Yes' : 'No'}</td>
                     <td>{dog.ageForMonths}</td>
                     <td>{checkAdoptable(dog)}</td>
-                    <td>{dog.shelter ?? ''}</td>
                     <td>{dog.microchipID}</td>
                     <td>
                       <button onClick={() => {
@@ -98,6 +96,19 @@ export const Dogdashboard = () => {
                         setDogId(dog.id);
                       }}
                         className={styles["detail-link"]}>Details</button>
+                    </td>
+                    <td>
+                      <button onClick={() => {
+                        if (dog.altered && dog.microchipID != null) {
+                          handleClick(5);
+                          setDogId(dog.id);
+                        }
+                      }}
+                        disabled={!(dog.altered && dog.microchipID != null)}
+                        className={dog.altered && dog.microchipID != null ? styles["detail-link"] : `${styles["action-btn"]} ${styles["disabled-btn"]}`}
+                      >  {dog.altered && dog.microchipID != null
+                        ? "Adoption Application"
+                        : "Not Available for Adoption"}</button>
                     </td>
                   </tr>
                 )
