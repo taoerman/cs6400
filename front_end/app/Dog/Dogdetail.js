@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import styles from './dogdetail.module.css'
+import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
 export const DogDetail = () => {
     const { setCurrentView, currentView, dogId, setDogId } = useView();
