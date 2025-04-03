@@ -103,8 +103,8 @@ def review_pending_applications(request):
         return JsonResponse({'error': 'Only GET allowed'}, status=405)
 
     # Check if current user is ED
-    if not request.session.get('isExecutiveDirector'):
-        return JsonResponse({'error': 'Permission denied'}, status=403)
+    # if not request.session.get('isExecutiveDirector'):
+    #     return JsonResponse({'error': 'Permission denied'}, status=403)
 
     try:
         with connection.cursor() as cursor:
@@ -139,7 +139,9 @@ def review_pending_applications(request):
                 'adopterName': f"{row[3]} {row[4]}",
                 'dogID': row[5],
                 'dogName': row[6],
-                'status': row[7]
+                'status': row[7],
+                'adopterEmail': row[8],
+                'phoneNumber': row[9]
             })
 
         return JsonResponse({'applications': results}, status=200)
