@@ -1,6 +1,7 @@
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.db import connection
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 import json
 
 
@@ -57,8 +58,8 @@ def add_dog(request):
 
             current_in_shelter = total_dogs - adopted_dogs
 
-            if current_in_shelter > 15:
-                return JsonResponse({'error': 'Dog shelter is full (max 15 dogs)'}, status=400)
+            if current_in_shelter > settings.MAX_SHELTER_CAPACITY:
+                return JsonResponse({'error': f'Dog shelter is full (max {settings.MAX_SHELTER_CAPACITY} dogs)'}, status=400)
 
             cursor.execute("""
                 INSERT INTO Dog (name, breed, sex, altered, ageForMonths, description,

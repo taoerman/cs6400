@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./report.module.css"
+import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
 export const Report = () => {
     const [page, setPage] = React.useState(1)

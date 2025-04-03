@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styles from './adddog.module.css'
+import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
 export const AddDog = () => {
     const { setCurrentView, currentView } = useView();

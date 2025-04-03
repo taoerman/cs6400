@@ -3,10 +3,12 @@ import hashlib
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.db import connection
-from datetime import datetime
+from datetime import datetime, timedelta
+import secrets
 
 
 def get_users(request):
+    email = request.GET.get('email')
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM User")
         columns = [col[0] for col in cursor.description]
@@ -50,7 +52,7 @@ def register_user(request):
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
 
-
+TOKEN_STORE = {}
 @csrf_exempt
 def login_user(request):
     if request.method != 'POST':
@@ -58,8 +60,8 @@ def login_user(request):
 
     try:
         data = json.loads(request.body)
-        email = data['userEmail']
-        password = data['password']
+        email = data.get('userEmail')
+        password = data.get('password')
 
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -69,15 +71,27 @@ def login_user(request):
 
         if user:
             # save userEmail in session, we will use this in login_status api
+            token = secrets.token_hex(32)
             is_exec = user[5]
-            request.session['user_email'] = email
-            request.session['isExecutiveDirector'] = is_exec
-            return JsonResponse({'message': 'Login successful'}, status=200)
+            TOKEN_STORE[token] = {
+                'user_email': email,
+                'is_exec': is_exec,
+                'expires_at': datetime.now() + timedelta(hours=1)
+            }
+            return JsonResponse({
+                'message': 'Login successful',
+                'token': token,
+                'is_exec': is_exec,
+                'expires_in': 3600
+            }, status=200)
         else:
             return JsonResponse({'error': 'Invalid credentials'}, status=401)
 
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+
     except Exception as e:
-        return HttpResponseBadRequest(f"Error: {str(e)}")
+        return HttpResponseBadRequest(f"Error: {str(e)}", status=500)
 
 
 @csrf_exempt
