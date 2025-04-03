@@ -7,8 +7,9 @@ from datetime import datetime
 
 
 def get_users(request):
+    email = request.GET.get('email')
     with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM User")
+        cursor.execute("SELECT * FROM User where userEmail = %s", [email])
         columns = [col[0] for col in cursor.description]
         rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
     return JsonResponse(rows, safe=False)
@@ -66,7 +67,7 @@ def login_user(request):
                 SELECT * FROM User WHERE userEmail = %s AND password = %s
             """, [email, password])
             user = cursor.fetchone()
-
+            
         if user:
             # save userEmail in session, we will use this in login_status api
             is_exec = user[5]
