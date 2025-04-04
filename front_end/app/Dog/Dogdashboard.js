@@ -3,22 +3,37 @@ import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
 export const Dogdashboard = () => {
   const [data, setData] = useState([]);
+  const [capacity, setCapacity] = useState({
+    remainingSpace: 0
+  });
   const [filter, setFilter] = useState('all');
   const maxDogNum = process.env.NEXT_PUBLIC_MAX_SHELTER_CAPACITY
   useEffect(() => {
     async function loadData() {
       const res = await fetch('http://127.0.0.1:8000/dogs/get_all_dogs/');
       const result = await res.json();
-      setData(result);
+      const sortedRes = [...result].sort((a, b) =>
+        new Date(a.surrenderDate) - new Date(b.surrenderDate)
+      );
+      setData(sortedRes);
     }
     loadData();
   }, []);
+  useEffect(() => {
+    async function loadData() {
+      const res = await fetch('http://127.0.0.1:8000/dogs/shelter_capacity/');
+      const result = await res.json();
+      setCapacity(result);
+    }
+    loadData();
+  }, []);
+
   const { setCurrentView, currentView, dogId, setDogId } = useView();
   const handleClick = (num) => {
     setCurrentView(num)
   }
   const checkAdoptable = (dog) => {
-    if (dog.altered && dog.microchipID != null)
+    if (dog.altered && dog.microchipID.length != 0)
       return 'Yes'
     else
       return 'No'
@@ -26,7 +41,8 @@ export const Dogdashboard = () => {
 
   const filteredData = data.filter(dog => {
     if (filter === 'all') return true;
-    const isAdoptable = dog.altered && dog.microchipID != null;
+    console.log("eeee:", dog.microchipID);
+    const isAdoptable = dog.altered && dog.microchipID.length != 0;
     return filter === 'adoptable' ? isAdoptable : !isAdoptable;
   });
 
@@ -35,8 +51,8 @@ export const Dogdashboard = () => {
       <div className={styles["dashboard-header"]}>
         <h1 className={styles["page-title"]}>Dog Dashboard</h1>
         <div>
-          <span >Dog Capacity: 5 </span>
-          {data.length < maxDogNum && <div className={styles["dashboard-actions"]}>
+          <span >Dog Capacity: {capacity.remainingSpace}  </span>
+          {capacity?.remainingSpace > 0 && <div className={styles["dashboard-actions"]}>
             <button onClick={() => handleClick(2)} className={styles["primary-btn"]}>Add New Dog</button>
           </div>}
         </div>
@@ -114,9 +130,9 @@ export const Dogdashboard = () => {
                           setDogId(dog.id);
                         }
                       }}
-                        disabled={!(dog.altered && dog.microchipID != null)}
-                        className={dog.altered && dog.microchipID != null ? styles["detail-link"] : `${styles["action-btn"]} ${styles["disabled-btn"]}`}
-                      >  {dog.altered && dog.microchipID != null
+                        disabled={!(dog.altered && dog.microchipID.length != 0)}
+                        className={dog.altered && dog.microchipID.length != 0 ? styles["detail-link"] : `${styles["action-btn"]} ${styles["disabled-btn"]}`}
+                      >  {dog.altered && dog.microchipID.length != 0
                         ? "Adoption Application"
                         : "Not Available for Adoption"}</button>
                     </td>
