@@ -125,22 +125,15 @@ def view_dog_expense(request, dogID):
             ORDER BY expenseDate ASC
         """, [dogID])
 
-        rows = cursor.fetchall()
+        expense_list = [
+            {
+                "expenseDate": row[0],
+                "expenseVendor": row[1],
+                "expenseCategory": row[2],  # 直接使用ENUM值（如"medical"）
+                "expenseAmount": float(row[3])
+            }
+            for row in cursor.fetchall()
+        ]
 
-    # Deserialize JSON category for each row
-    expense_list = []
-    for row in rows:
-        expenseDate, expenseVendor, expenseCategory_json, expenseAmount = row
-        try:
-            expenseCategory = json.loads(expenseCategory_json)
-        except Exception:
-            expenseCategory = []
-
-        expense_list.append({
-            "expenseDate": expenseDate,
-            "expenseVendor": expenseVendor,
-            "expenseCategory": expenseCategory,
-            "expenseAmount": float(expenseAmount),
-        })
 
     return JsonResponse({"expenses": expense_list})

@@ -1,15 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
 export const DogDetail = () => {
     const { setCurrentView, currentView, dogId, setDogId } = useView();
     const [data, setData] = useState();
+    const [expensesData, setExpensesData] = useState({
+        expenses: []
+    });
     const [editing, setEditing] = useState(false)
     const [editData, setEditData] = useState({})
     const loadData = async () => {
         const res = await fetch('http://127.0.0.1:8000/dogs/get_dog/' + dogId);
         const result = await res.json();
         setData(result);
+        const exp = await fetch('http://127.0.0.1:8000/expenses/' + dogId);
+        const expdata = await exp.json();
+        setExpensesData(expdata);
+        console.log(expdata);
         const tempData = {
             sex: result.sex,
             microchipID: result.microchipID,
@@ -18,6 +25,31 @@ export const DogDetail = () => {
         };
         setEditData(tempData);
     };
+
+    const { categoryTotals, grandTotal } = useMemo(() => {
+        const totals = {};
+        let grandTotal = 0;
+
+        expensesData.expenses.forEach(expense => {
+            const category = expense.expenseCategory;
+            const amount = expense.expenseAmount;
+
+            totals[category] = (totals[category] || 0) + amount;
+            grandTotal += amount;
+        });
+
+        return { categoryTotals: totals, grandTotal };
+    }, [expensesData]);
+
+    const categoryLabels = {
+        medical: "Medical",
+        supplies: "Supplies",
+        food: "Food",
+        grooming: "Grooming",
+        training: "Training"
+    };
+
+
     useEffect(() => {
         loadData();
     }, [dogId]);
@@ -142,34 +174,37 @@ export const DogDetail = () => {
                                 <tr>
                                     <th>Date</th>
                                     <th>Category</th>
-                                    <th>Description</th>
+                                    <th>Vendor</th>
                                     <th>Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>2024-01-15</td>
-                                    <td>Medical</td>
-                                    <td>Initial Checkup</td>
-                                    <td>$75.00</td>
-                                </tr>
-                                <tr>
-                                    <td>2024-01-20</td>
-                                    <td>Supplies</td>
-                                    <td>Food and Treats</td>
-                                    <td>$45.00</td>
-                                </tr>
-                                <tr>
-                                    <td>2024-02-01</td>
-                                    <td>Medical</td>
-                                    <td>Vaccinations</td>
-                                    <td>$120.00</td>
-                                </tr>
+                                {expensesData.expenses?.length > 0 ? (
+                                    expensesData.expenses.map((expense, index) => (
+                                        <tr key={index}>
+                                            <td>{expense.expenseDate}</td>
+                                            <td>{expense.expenseCategory}</td>
+                                            <td>{expense.expenseVendor}</td>
+                                            <td>${expense.expenseAmount.toFixed(2)}</td>
+                                        </tr>
+                                    )
+                                    )) :
+                                    <tr><td colSpan="4">No expenses found</td></tr>
+                                }
                             </tbody>
                             <tfoot>
+                                {Object.entries(categoryTotals).map(([category, total]) => (
+                                    <tr key={`total-${category}`}>
+                                        <td colSpan="2"></td>
+                                        <td><strong>Total {categoryLabels[category] || category}:</strong></td>
+                                        <td><strong>${total.toFixed(2)}</strong></td>
+                                    </tr>
+                                ))}
+
                                 <tr>
-                                    <td>Total Expenses</td>
-                                    <td>$240.00</td>
+                                    <td colSpan="2"></td>
+                                    <td><strong>Grand Total:</strong></td>
+                                    <td><strong>${grandTotal.toFixed(2)}</strong></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -179,7 +214,9 @@ export const DogDetail = () => {
                 <div className={styles["detail-actions"]}>
                     <button onClick={() => handleEdit()} className={styles["secondary-btn"]}>{editing ? 'Cancel' : 'Edit'}</button>
                     <button onClick={() => handleSave()} className={styles["secondary-btn"]}>Save</button>
-                    <button onClick={() => handleClick(4)} className={styles["secondary-btn"]}>
+                    <button onClick={() =>
+                        handleClick(4)
+                    } className={styles["secondary-btn"]}>
                         Add Expense
                     </button>
                     <button onClick={() => handleClick(5)} className={styles["primary-btn"]}>
@@ -187,6 +224,6 @@ export const DogDetail = () => {
                     </button>
                 </div>
             </div>
-        </main>
+        </main >
     )
 }

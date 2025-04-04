@@ -61,7 +61,7 @@ export const Expense = () => {
             setCurrentView(1);
         } catch (error) {
             console.error("Error:", error);
-            alert("Error adding expense");
+            alert("Error adding expense: Expense date must be on or after surrenderDate / Duplicate expense entered");
         }
     };
 
