@@ -24,7 +24,7 @@ export const Adoption = () => {
       [name]: value
     }));
   };
-  console.log("input: ", formData);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formattedData = {

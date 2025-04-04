@@ -23,6 +23,7 @@ def add_expense(request):
 
     try:
         data = json.loads(request.body)
+        print(data)
         dogID = data['dogID']
         expenseDate = data['expenseDate']
         expenseVendor = data['expenseVendor']
