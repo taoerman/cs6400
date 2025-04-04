@@ -1,11 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
 export const Expense = () => {
     const { setCurrentView, currentView, dogId, setDogId } = useView();
+    const [categories, setCategories] = useState([]);
+
     const handleClick = (num) => {
         setCurrentView(num)
     }
+
+    useEffect(() => {
+        fetch('http://127.0.0.1:8000/expenses/get_all_categories/')
+            .then(response => response.json())
+            .then(data => {
+                setCategories(data.categories || []);
+            })
+            .catch(error => {
+                console.error('Failed to load categories:', error);
+            });
+    }, []);
+
     const [formData, setFormData] = useState({
         expenseDate: "",
         expenseVendor: "",
@@ -22,6 +36,7 @@ export const Expense = () => {
     };
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         const formattedData = {
             dogID: dogId,
             expenseDate: formData.expenseDate,
@@ -65,27 +80,30 @@ export const Expense = () => {
                         <h2>Expense Details</h2>
                         <div className={styles["form-grid"]}>
                             <div className={styles["form-group"]}>
-                                <label htmlFor="expenseDate">Date*</label>
+                                <label htmlFor="expenseDate">Date</label>
                                 <input type="date" id="expenseDate" name="expenseDate"
                                     onChange={handleChange} required />
                             </div>
 
                             <div className={styles["form-group"]}>
-                                <label htmlFor="expenseCategory">Category*</label>
+                                <label htmlFor="expenseCategory">Category</label>
                                 <select id="expenseCategory" name="expenseCategory"
-                                    onChange={handleChange} required>
-                                    <option value="">Select Category</option>
-                                    <option value="medical">Medical</option>
-                                    <option value="supplies">Supplies</option>
-                                    <option value="food">Food</option>
-                                    <option value="grooming">Grooming</option>
-                                    <option value="training">Training</option>
-                                    <option value="other">Other</option>
+                                    onChange={handleChange}
+                                    defaultValue=""
+                                    required>
+                                    <option value="" disabled hidden>
+                                        Please enter category
+                                    </option>
+                                    {categories.map(category => (
+                                        <option key={category} value={category}>
+                                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
 
                             <div className={styles["form-group"]}>
-                                <label htmlFor="expenseAmount">Amount ($)*</label>
+                                <label htmlFor="expenseAmount">Amount ($)</label>
                                 <input type="number" id="expenseAmount" name="expenseAmount"
                                     step="0.01" min="0"
                                     onChange={handleChange} required
@@ -93,7 +111,7 @@ export const Expense = () => {
                             </div>
 
                             <div className={styles["form-group"]}>
-                                <label htmlFor="expenseVendor">Vendor*</label>
+                                <label htmlFor="expenseVendor">Vendor</label>
                                 <input type="text" id="expenseVendor" name="expenseVendor"
                                     onChange={handleChange}
                                     required placeholder="Enter vendor name" />
