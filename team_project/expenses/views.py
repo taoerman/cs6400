@@ -17,6 +17,28 @@ def get_all_expenses(request):
     return JsonResponse(expenses, safe=False)
 
 @csrf_exempt
+def get_expense_categories(request):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Only GET allowed'}, status=405)
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT COLUMN_TYPE
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_NAME = 'Expense'
+                AND COLUMN_NAME = 'expenseCategory'
+            """)
+            enum_data = cursor.fetchone()[0]
+
+            categories = enum_data.replace("enum(", "").replace(")", "").replace("'", "").split(",")
+
+        return JsonResponse({'categories': categories}, status=200)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
 def add_expense(request):
     if request.method != 'POST':
         return JsonResponse({'error' : {'Only POST Allowed'}})

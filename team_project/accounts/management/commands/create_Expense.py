@@ -12,7 +12,7 @@ class Command(BaseCommand):
                     dogID INT NOT NULL,
                     expenseDate DATE NOT NULL,
                     expenseVendor VARCHAR(255) NOT NULL,
-                    expenseCategory ENUM('medical', 'supplies', 'food', 'grooming', 'training', 'other') NOT NULL,
+                    expenseCategory ENUM('medical', 'supplies', 'food', 'grooming', 'training') NOT NULL,
                     expenseAmount DECIMAL(10, 2) NOT NULL CHECK (expenseAmount >= 0),
                     FOREIGN KEY (dogID) REFERENCES Dog(id)
                 )
