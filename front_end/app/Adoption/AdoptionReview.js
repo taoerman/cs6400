@@ -3,6 +3,20 @@ import styles from "@/app/styles.module.css"
 
 export const AdoptionReview = () => {
     const [data, setData] = useState([]);
+    const [filteredData, setFilteredData] = useState([]);
+    const [keyword, setKeyword] = useState('')
+    const [filtered, setFiltered] = useState(false)
+    useEffect(()=>{
+      if(keyword === "")
+        setFiltered(false)
+      else{
+        setFiltered(true)
+        setFilteredData(data.filter((item)=>item.adopterName.toLowerCase().includes(keyword.toLowerCase())))
+      }
+    },[keyword])
+    const handleChange = (e) =>{
+      setKeyword(e.target.value)
+    }
       useEffect(() => {
         async function loadData() {
           const res = await fetch('http://127.0.0.1:8000/adoptions/review_pending_applications/');
@@ -21,7 +35,20 @@ export const AdoptionReview = () => {
         <div className={styles["dashboard-header"]}>
           <h1 className={styles["page-title"]}>Adoption Review</h1>
         </div>
-  
+        <div className={styles["controls-section"]}>
+        <div className={styles["controls-wrapper"]}>
+
+          <div className={styles["search-group"]}>
+            <label>Search Adopter Name:</label>
+            <div className={styles["search-input-wrapper"]}>
+              <input value={keyword} onChange={(e)=>handleChange(e)} type="text" id="searchInput" />
+              <button type="button" className={styles["search-button"]}>
+                <i className={styles["fas fa-search"]}></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
         <div className={styles["table-container"]}>
           <table className={styles["dogs-table"]}>
             <thead>
@@ -37,7 +64,22 @@ export const AdoptionReview = () => {
             </thead>
             <tbody>
               {
-                data.map((item) => {
+                filtered?filteredData.map((item) => {
+                  return (
+                    <tr key={item.applicationID}>
+                      <td>{item.applicationID}</td>
+                      <td>{item.dogID}</td>
+                      <td>{item.adopterName}</td>
+                      <td>{item.dogName}</td>
+                      <td>{item.adopterEmail}</td>
+                      <td>{item.phoneNumber}</td>
+                      <td>
+                        <button onClick={() => handleClick(1, applicationID)} className={styles["detail-link"]}>approved</button>
+                        <button onClick={() => handleClick(2, applicationID)} className={styles["detail-link"]}>rejected</button>
+                      </td>
+                    </tr>
+                  )
+                }):data.map((item) => {
                   return (
                     <tr key={item.applicationID}>
                       <td>{item.applicationID}</td>
