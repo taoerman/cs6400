@@ -99,7 +99,7 @@ def edit_dog(request, dog_id):
     try:
         data = json.loads((request.body))
         new_sex = data.get('sex')
-        new_breed = data.get('breed')
+        new_breed = json.dumps(data.get('breed'))
         new_microchip = data.get('microchipID')
 
         if new_sex not in ['Male', 'Female', 'Unknown']:
