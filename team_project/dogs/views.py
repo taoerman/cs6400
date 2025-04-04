@@ -71,16 +71,26 @@ def add_dog(request):
 
         # Bulldog + Uga restriction
         if 'Bulldog' in breed and name.strip().lower() == 'uga':
-            return JsonResponse({'error': 'Bulldogs named Uga are not allowed'}, status=400)
+            return JsonResponse({
+                'error': 'Bulldogs named Uga are not allowed.',
+                'alert': 'You must change to another name.'
+            }, status=400)
+
+        current, max_capacity = get_current_shelter_status()
+
+        if current > max_capacity:
+            return JsonResponse({'error': f'Dog shelter is full (max {settings.MAX_SHELTER_CAPACITY} dogs)'}, status=400)
 
         # Convert breed list to JSON string
         # breed_json = json.dumps(breed)
 
         with connection.cursor() as cursor:
-            current, max_capacity = get_current_shelter_status()
-
-            if current > max_capacity:
-                return JsonResponse({'error': f'Dog shelter is full (max {settings.MAX_SHELTER_CAPACITY} dogs)'}, status=400)
+            # Check if microchipID already exists (if provided)
+            cursor.execute("SELECT COUNT(*) FROM Dog WHERE microchipID = %s", [microchip_id])
+            if cursor.fetchone()[0] > 0:
+                return JsonResponse({
+                    'error': 'A dog with this microchip ID already exists.',
+                }, status=400)
 
             cursor.execute("""
                 INSERT INTO Dog (name, breed, sex, altered, ageForMonths, description,
@@ -118,6 +128,13 @@ def edit_dog(request, dog_id):
         return JsonResponse({'error' : 'Only PUT Allowed'}, status=405)
 
     try:
+        # Get user info from session
+        user_email = request.session.get('user_email')
+        is_exec = request.session.get('is_exec')
+
+        if not user_email:
+            return JsonResponse({'error': 'User not logged in'}, status=403)
+
         data = json.loads((request.body))
         new_sex = data.get('sex')
         new_breed = json.dumps(data.get('breed'))
@@ -125,6 +142,25 @@ def edit_dog(request, dog_id):
 
         if new_sex not in ['Male', 'Female', 'Unknown']:
             return JsonResponse({'error' : 'Invalid Syntax value'}, status=400)
+
+            # If not ED, check age before allowing microchipID change
+            if not is_exec and new_microchip:
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                            SELECT birthDate FROM User WHERE userEmail = %s
+                        """, [user_email])
+                    row = cursor.fetchone()
+
+                    if not row:
+                        return JsonResponse({'error': 'User not found'}, status=404)
+
+                    birth_date = row[0]
+                    today = date.today()
+                    age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+
+                    if age < 18:
+                        return JsonResponse({'error': 'Only users 18+ can update microchipID'}, status=403)
+
 
         with connection.cursor() as cursor:
             cursor.execute("""
