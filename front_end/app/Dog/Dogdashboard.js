@@ -74,7 +74,8 @@ export const Dogdashboard = () => {
               <th>Age For Months</th>
               <th>Adoptable</th>
               <th>Microchip ID</th>
-              <th>Actions</th>
+              <th>Details</th>
+              <th>Expense Incurred</th>
               <th>Application</th>
             </tr>
           </thead>
@@ -97,6 +98,14 @@ export const Dogdashboard = () => {
                       }}
                         className={styles["detail-link"]}>Details</button>
                     </td>
+                    <td>
+                      <button onClick={() => {
+                        handleClick(4);
+                        setDogId(dog.id);
+                      }}
+                        className={styles["detail-link"]}>Add Expense</button>
+                    </td>
+
                     <td>
                       <button onClick={() => {
                         if (dog.altered && dog.microchipID != null) {
