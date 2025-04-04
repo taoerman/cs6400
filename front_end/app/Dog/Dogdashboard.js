@@ -4,6 +4,7 @@ import { useView } from '@/contexts/ViewContext';
 export const Dogdashboard = () => {
   const [data, setData] = useState([]);
   const [filter, setFilter] = useState('all');
+  const maxDogNum = process.env.NEXT_PUBLIC_MAX_SHELTER_CAPACITY
   useEffect(() => {
     async function loadData() {
       const res = await fetch('http://127.0.0.1:8000/dogs/get_all_dogs/');
@@ -33,9 +34,9 @@ export const Dogdashboard = () => {
     <main className={styles["main-content"]}>
       <div className={styles["dashboard-header"]}>
         <h1 className={styles["page-title"]}>Dog Dashboard</h1>
-        <div className={styles["dashboard-actions"]}>
+        {data.length < maxDogNum && <div className={styles["dashboard-actions"]}>
           <button onClick={() => handleClick(2)} className={styles["primary-btn"]}>Add New Dog</button>
-        </div>
+        </div>}
       </div>
 
       <div className={styles["controls-section"]}>
