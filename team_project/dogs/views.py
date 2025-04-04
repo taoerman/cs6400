@@ -38,7 +38,7 @@ def shelter_capacity(request):
         return JsonResponse({
             'currentInShelter': current,
             'maxCapacity': max_capacity,
-            'remain_space': remain_space
+            'remainingSpace': remain_space
         }, status=200)
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
