@@ -4,14 +4,62 @@ import { useView } from '@/contexts/ViewContext';
 export const DogDetail = () => {
     const { setCurrentView, currentView, dogId, setDogId } = useView();
     const [data, setData] = useState();
+    const [editing, setEditing] = useState(false)
+    const [editData, setEditData] = useState({})
+    const loadData = async () => {
+        const res = await fetch('http://127.0.0.1:8000/dogs/get_dog/' + dogId);
+        const result = await res.json();
+        setData(result);
+        const tempData = {
+          sex: result.sex,
+          microchipID: result.microchipID,
+          breed: result.breed,
+          altered: result.altered,
+        };
+        setEditData(tempData);
+      };
     useEffect(() => {
-        async function loadData() {
-            const res = await fetch('http://127.0.0.1:8000/dogs/get_dog/' + dogId);
-            const result = await res.json();
-            setData(result);
-        }
         loadData();
     }, [dogId]);
+    const handleSave = async () => {
+        // const updated = {};
+        // for (const key in editData) {
+        //   if (editData[key] !== data[key]) {
+        //     updated[key] = editData[key];
+        //   }
+        // }
+        const body = JSON.stringify(editData)
+        const res = await fetch('http://127.0.0.1:8000/dogs/edit_dog/' + dogId + '/', {method:'PUT', body:body})
+        //if success, reload dog data
+        if(res.ok){
+            loadData()
+        }
+    }
+    const handleInput = (e, type) => {
+        const keyMap = {
+            sex: 'sex',
+            breed: 'breed',
+            altered: 'altered',
+            chip: 'microchipID',
+          };
+        
+          const key = keyMap[type];
+          let value = e.target.value
+          if (key) {
+            setEditData({ ...editData, [key]: value });
+          }
+    }
+    const handleEdit = () => {
+        //reset edit data
+        const tempData = {
+            sex: data.sex,
+            microchipID: data.microchipID,
+            breed: data.breed,
+            altered: data.altered,
+          };
+        setEditData(tempData);
+        setEditing(!editing)
+    }
     const handleClick = (num) => {
         setCurrentView(num)
     }
@@ -41,11 +89,11 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Breed</label>
-                            <span>{data != null && data.breed ? JSON.parse(data.breed).join(', ') : ''}</span>
+                            {editing&&['Unknown','Mixed'].includes(data?.breed)?<input type='text' value={editData.breed} onChange = {(e)=>handleInput(e,'breed')}/>:<span>{data != null && data.breed ? JSON.parse(data.breed).join(', ') : ''}</span>}
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Sex</label>
-                            <span>{data != null ? data.sex : ""}</span>
+                            {editing&&data?.sex==='Unknown'?<input type='text' value={editData.sex} onChange = {(e)=>handleInput(e,'sex')}/>:<span>{data != null ? data.sex : ""}</span>}
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Age</label>
@@ -53,7 +101,7 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Altered</label>
-                            <span>{data != null ? (data.altered ? 'Yes' : 'No') : 'Unknown'}</span>
+                            {editing&&data.altered === false?<input value = {editData.altered} onChange = {(e)=>handleInput(e,'altered')}/>:<span>{data != null ? (data.altered ? 'Yes' : 'No') : 'Unknown'}</span>}
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Adoptable</label>
@@ -69,7 +117,7 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Microchip ID</label>
-                            <span>{data != null ? data.microchipID : ""}</span>
+                            {editing&&data?.microchipID === null?<input type='text' value={editData.microchipID} onChange = {(e)=>handleInput(e,'chip')}/>:<span>{data != null ? data.microchipID : ""}</span>}
                         </div>
                     </div>
                 </div>
@@ -135,6 +183,8 @@ export const DogDetail = () => {
                 </div>
 
                 <div className={styles["detail-actions"]}>
+                    <button onClick = {()=>handleEdit()} className={styles["secondary-btn"]}>{editing?'Cancel':'Edit'}</button>
+                    <button onClick = {()=>handleSave()} className={styles["secondary-btn"]}>Save</button>
                     <button onClick={() => handleClick(4)} className={styles["secondary-btn"]}>
                         Add Expense
                     </button>
