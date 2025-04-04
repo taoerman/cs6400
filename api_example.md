@@ -399,10 +399,10 @@ method: POST
 
 request example: {
 
-      "dogID": 5,
-      "expenseDate": "2025-04-01",
-      "expenseVendor": "Paws Vet Clinic",
-      "expenseCategory": ["medical", "vaccination"],
+      "dogID": 1,
+      "expenseDate": "2025-04-03",
+      "expenseVendor": "PetSmart",
+      "expenseCategory": "medical",
       "expenseAmount": 89.99
 }
 

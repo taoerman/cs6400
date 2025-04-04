@@ -30,10 +30,9 @@ def add_expense(request):
         expenseCategory = data['expenseCategory']
         expenseAmount = data['expenseAmount']
 
-        # List of categories; values must be from the admin-controlled category list
-        if not isinstance(expenseCategory, list):
-            return HttpResponseBadRequest("expenseCategory must be a list")
-        expenseCategory_json = json.dumps(expenseCategory)
+        valid_categories = ['medical', 'supplies', 'food', 'grooming', 'training', 'other']
+        if expenseCategory not in valid_categories:
+            return HttpResponseBadRequest("Invalid expense category")
 
         # Expense amount (must be ≥ 0.00)
         if float(expenseAmount) < 0:
@@ -82,9 +81,7 @@ def add_expense(request):
                 dogID,
                 expenseDate,
                 expenseVendor,
-                # json.dumps convert python obj to json
-                # json.loads convert json to python obj list
-                json.dumps(expenseCategory),
+                expenseCategory,
                 expenseAmount
             ])
 
