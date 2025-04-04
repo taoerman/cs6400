@@ -78,6 +78,11 @@ def login_user(request):
                 'is_exec': is_exec,
                 'expires_at': datetime.now() + timedelta(hours=1)
             }
+
+            request.session['user_email'] = email
+            request.session['is_exec'] = is_exec
+            request.session.set_expiry(3600)
+
             return JsonResponse({
                 'message': 'Login successful',
                 'token': token,
