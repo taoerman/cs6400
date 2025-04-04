@@ -98,7 +98,8 @@ export const Dogdashboard = () => {
                     <td>{checkAdoptable(dog)}</td>
                     <td>{dog.surrenderDate}</td>
                     <td>
-                      <button onClick={() => {
+                      <button onClick={(e) => {
+                        e.stopPropagation();
                         handleClick(4);
                         setDogId(dog.id);
                       }}
@@ -106,8 +107,9 @@ export const Dogdashboard = () => {
                     </td>
 
                     <td>
-                      <button onClick={() => {
+                      <button onClick={(e) => {
                         if (dog.altered && dog.microchipID != null) {
+                          e.stopPropagation();
                           handleClick(5);
                           setDogId(dog.id);
                         }
