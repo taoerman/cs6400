@@ -13,7 +13,7 @@ export const DogDetail = () => {
         const tempData = {
           sex: result.sex,
           microchipID: result.microchipID,
-          breed: result.breed,
+          breed: JSON.parse(result.breed).join(', '),
           altered: result.altered,
         };
         setEditData(tempData);
@@ -22,13 +22,7 @@ export const DogDetail = () => {
         loadData();
     }, [dogId]);
     const handleSave = async () => {
-        // const updated = {};
-        // for (const key in editData) {
-        //   if (editData[key] !== data[key]) {
-        //     updated[key] = editData[key];
-        //   }
-        // }
-        const body = JSON.stringify(editData)
+        const body = JSON.stringify({...editData, breed:editData.breed.split(",").map(item => item.trim())})
         const res = await fetch('http://127.0.0.1:8000/dogs/edit_dog/' + dogId + '/', {method:'PUT', body:body})
         //if success, reload dog data
         if(res.ok){
@@ -54,7 +48,7 @@ export const DogDetail = () => {
         const tempData = {
             sex: data.sex,
             microchipID: data.microchipID,
-            breed: data.breed,
+            breed: JSON.parse(data.breed).join(', '),
             altered: data.altered,
           };
         setEditData(tempData);
@@ -89,7 +83,7 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Breed</label>
-                            {editing&&['Unknown','Mixed'].includes(data?.breed)?<input type='text' value={editData.breed} onChange = {(e)=>handleInput(e,'breed')}/>:<span>{data != null && data.breed ? JSON.parse(data.breed).join(', ') : ''}</span>}
+                            {editing&&['Unknown','Mixed'].includes(JSON.parse(data.breed).join(', '))?<input type='text' value={editData.breed} onChange = {(e)=>handleInput(e,'breed')}/>:<span>{data != null && data.breed ? JSON.parse(data.breed).join(', ') : ''}</span>}
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Sex</label>
