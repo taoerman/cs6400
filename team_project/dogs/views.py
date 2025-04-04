@@ -4,6 +4,17 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 import json
 
+def get_current_shelter_status():
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT COUNT(*) FROM Dog")
+        total_dogs = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM Adoption")
+        adopted_dogs = cursor.fetchone()[0]
+
+        current_in_shelter = total_dogs - adopted_dogs
+    return current_in_shelter, settings.MAX_SHELTER_CAPACITY
+
 
 def get_all_dogs(request):
     if request.method != 'GET':
@@ -15,6 +26,22 @@ def get_all_dogs(request):
         dogs = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
     return JsonResponse(dogs, safe=False)
+
+@csrf_exempt
+def shelter_capacity(request):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Only GET allowed'}, status=405)
+
+    try:
+        current, max_capacity = get_current_shelter_status()
+        remain_space = max_capacity - current
+        return JsonResponse({
+            'currentInShelter': current,
+            'maxCapacity': max_capacity,
+            'remain_space': remain_space
+        }, status=200)
+    except Exception as e:
+        return HttpResponseBadRequest(f"Error: {str(e)}")
 
 @csrf_exempt
 def add_dog(request):
@@ -50,15 +77,9 @@ def add_dog(request):
         # breed_json = json.dumps(breed)
 
         with connection.cursor() as cursor:
-            cursor.execute("SELECT COUNT(*) FROM Dog")
-            total_dogs = cursor.fetchone()[0]
+            current, max_capacity = get_current_shelter_status()
 
-            cursor.execute("SELECT COUNT(*) FROM Adoption")
-            adopted_dogs = cursor.fetchone()[0]
-
-            current_in_shelter = total_dogs - adopted_dogs
-
-            if current_in_shelter > settings.MAX_SHELTER_CAPACITY:
+            if current > max_capacity:
                 return JsonResponse({'error': f'Dog shelter is full (max {settings.MAX_SHELTER_CAPACITY} dogs)'}, status=400)
 
             cursor.execute("""
