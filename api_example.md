@@ -208,6 +208,17 @@ response example: {
 }
 
 ## dogs
+### shelter_capacity
+url: http://127.0.0.1:8080/dogs/shelter_capacity/
+
+method: GET
+
+response example: {
+
+        "currentInShelter": 5,
+        "maxCapacity": 15,
+        "remain_space": 10
+}
 ### get_all_dogs(request)
 url: http://127.0.0.1:8080/dogs/get_all_dogs/
 
