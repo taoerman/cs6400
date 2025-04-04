@@ -11,21 +11,21 @@ export const DogDetail = () => {
         const result = await res.json();
         setData(result);
         const tempData = {
-          sex: result.sex,
-          microchipID: result.microchipID,
-          breed: JSON.parse(result.breed).join(', '),
-          altered: result.altered,
+            sex: result.sex,
+            microchipID: result.microchipID,
+            breed: JSON.parse(result.breed).join(', '),
+            altered: result.altered,
         };
         setEditData(tempData);
-      };
+    };
     useEffect(() => {
         loadData();
     }, [dogId]);
     const handleSave = async () => {
-        const body = JSON.stringify({...editData, breed:editData.breed.split(",").map(item => item.trim())})
-        const res = await fetch('http://127.0.0.1:8000/dogs/edit_dog/' + dogId + '/', {method:'PUT', body:body})
+        const body = JSON.stringify({ ...editData, breed: editData.breed.split(",").map(item => item.trim()) })
+        const res = await fetch('http://127.0.0.1:8000/dogs/edit_dog/' + dogId + '/', { method: 'PUT', body: body })
         //if success, reload dog data
-        if(res.ok){
+        if (res.ok) {
             loadData()
         }
     }
@@ -35,13 +35,13 @@ export const DogDetail = () => {
             breed: 'breed',
             altered: 'altered',
             chip: 'microchipID',
-          };
-        
-          const key = keyMap[type];
-          let value = e.target.value
-          if (key) {
+        };
+
+        const key = keyMap[type];
+        let value = e.target.value
+        if (key) {
             setEditData({ ...editData, [key]: value });
-          }
+        }
     }
     const handleEdit = () => {
         //reset edit data
@@ -50,7 +50,7 @@ export const DogDetail = () => {
             microchipID: data.microchipID,
             breed: JSON.parse(data.breed).join(', '),
             altered: data.altered,
-          };
+        };
         setEditData(tempData);
         setEditing(!editing)
     }
@@ -83,11 +83,11 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Breed</label>
-                            {editing&&['Unknown','Mixed'].includes(JSON.parse(data.breed).join(', '))?<input type='text' value={editData.breed} onChange = {(e)=>handleInput(e,'breed')}/>:<span>{data != null && data.breed ? JSON.parse(data.breed).join(', ') : ''}</span>}
+                            {editing && ['Unknown', 'Mixed'].includes(JSON.parse(data.breed).join(', ')) ? <input type='text' value={editData.breed} onChange={(e) => handleInput(e, 'breed')} /> : <span>{data != null && data.breed ? JSON.parse(data.breed).join(', ') : ''}</span>}
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Sex</label>
-                            {editing&&data?.sex==='Unknown'?<input type='text' value={editData.sex} onChange = {(e)=>handleInput(e,'sex')}/>:<span>{data != null ? data.sex : ""}</span>}
+                            {editing && data?.sex === 'Unknown' ? <input type='text' value={editData.sex} onChange={(e) => handleInput(e, 'sex')} /> : <span>{data != null ? data.sex : ""}</span>}
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Age</label>
@@ -95,7 +95,7 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Altered</label>
-                            {editing&&data.altered === false?<input value = {editData.altered} onChange = {(e)=>handleInput(e,'altered')}/>:<span>{data != null ? (data.altered ? 'Yes' : 'No') : 'Unknown'}</span>}
+                            {editing && data.altered === false ? <input value={editData.altered} onChange={(e) => handleInput(e, 'altered')} /> : <span>{data != null ? (data.altered ? 'Yes' : 'No') : 'Unknown'}</span>}
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Adoptable</label>
@@ -111,7 +111,7 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Microchip ID</label>
-                            {editing&&data?.microchipID === null?<input type='text' value={editData.microchipID} onChange = {(e)=>handleInput(e,'chip')}/>:<span>{data != null ? data.microchipID : ""}</span>}
+                            {editing && data?.microchipID === null ? <input type='text' value={editData.microchipID} onChange={(e) => handleInput(e, 'chip')} /> : <span>{data != null ? data.microchipID : ""}</span>}
                         </div>
                     </div>
                 </div>
@@ -121,15 +121,15 @@ export const DogDetail = () => {
                     <div className={styles["detail-grid"]}>
                         <div className={styles["detail-item"]}>
                             <label>Surrender Date</label>
-                            <span>2024-01-15</span>
+                            <span>{data != null ? data.surrenderDate : ""}</span>
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Surrender Type</label>
-                            <span>Owner Surrender</span>
+                            <span>{data != null ? data.surrenderDate : ""}</span>
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Surrenderer Phone</label>
-                            <span>123-456-7890</span>
+                            <span>{data != null ? data.surrenderPhone : ""}</span>
                         </div>
                     </div>
                 </div>
@@ -177,8 +177,8 @@ export const DogDetail = () => {
                 </div>
 
                 <div className={styles["detail-actions"]}>
-                    <button onClick = {()=>handleEdit()} className={styles["secondary-btn"]}>{editing?'Cancel':'Edit'}</button>
-                    <button onClick = {()=>handleSave()} className={styles["secondary-btn"]}>Save</button>
+                    <button onClick={() => handleEdit()} className={styles["secondary-btn"]}>{editing ? 'Cancel' : 'Edit'}</button>
+                    <button onClick={() => handleSave()} className={styles["secondary-btn"]}>Save</button>
                     <button onClick={() => handleClick(4)} className={styles["secondary-btn"]}>
                         Add Expense
                     </button>

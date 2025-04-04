@@ -34,9 +34,12 @@ export const Dogdashboard = () => {
     <main className={styles["main-content"]}>
       <div className={styles["dashboard-header"]}>
         <h1 className={styles["page-title"]}>Dog Dashboard</h1>
-        {data.length < maxDogNum && <div className={styles["dashboard-actions"]}>
-          <button onClick={() => handleClick(2)} className={styles["primary-btn"]}>Add New Dog</button>
-        </div>}
+        <div>
+          <span >Dog Capacity: 5 </span>
+          {data.length < maxDogNum && <div className={styles["dashboard-actions"]}>
+            <button onClick={() => handleClick(2)} className={styles["primary-btn"]}>Add New Dog</button>
+          </div>}
+        </div>
       </div>
 
       <div className={styles["controls-section"]}>
@@ -74,8 +77,7 @@ export const Dogdashboard = () => {
               <th>Altered</th>
               <th>Age For Months</th>
               <th>Adoptable</th>
-              <th>Microchip ID</th>
-              <th>Details</th>
+              <th>Surrender Date</th>
               <th>Expense Incurred</th>
               <th>Application</th>
             </tr>
@@ -84,21 +86,17 @@ export const Dogdashboard = () => {
             {
               filteredData.map((dog) => {
                 return (
-                  <tr key={dog.id}>
+                  <tr key={dog.id} onClick={() => {
+                    handleClick(3);
+                    setDogId(dog.id);
+                  }} >
                     <td>{dog.name}</td>
                     <td>{dog.breed ? JSON.parse(dog.breed).join(', ') : ''}</td>
                     <td>{dog.sex}</td>
                     <td>{dog.altered ? 'Yes' : 'No'}</td>
                     <td>{dog.ageForMonths}</td>
                     <td>{checkAdoptable(dog)}</td>
-                    <td>{dog.microchipID}</td>
-                    <td>
-                      <button onClick={() => {
-                        handleClick(3);
-                        setDogId(dog.id);
-                      }}
-                        className={styles["detail-link"]}>Details</button>
-                    </td>
+                    <td>{dog.surrenderDate}</td>
                     <td>
                       <button onClick={() => {
                         handleClick(4);
