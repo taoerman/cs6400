@@ -10,7 +10,7 @@ export const Router = () => {
         <>
           <Route title="Dog Dashboard" num={1} />
           <Route title="Add Adoption Application" num={5} />
-          <Route title="Adoption Review" num={9} />
+          <Route title="Adoption Application Review" num={9} />
           <Route title="Report" num={6} />
           <Route title="DrillDown" num={7} />
           <Route title="Volunteer" num={8} />
