@@ -41,7 +41,7 @@ def get_expense_categories(request):
 @csrf_exempt
 def add_expense(request):
     if request.method != 'POST':
-        return JsonResponse({'error' : {'Only POST Allowed'}, status=405)
+        return JsonResponse({'error' : {'Only POST Allowed'}}, status=405)
 
     try:
         data = json.loads(request.body)
