@@ -3,14 +3,14 @@ import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
 export const AddDog = () => {
     const { setCurrentView, currentView } = useView();
-    const [ vendors, setVendors ] = useState([]);
-    useEffect(()=>{
-        fetch('http://127.0.0.1:8000/dogs/get_vendors/').then((data)=>data.json())
-        .then((data)=>setVendors(data['vendors']))
-    },[])
+    const [vendors, setVendors] = useState([]);
+    useEffect(() => {
+        fetch('http://127.0.0.1:8000/dogs/get_vendors/').then((data) => data.json())
+            .then((data) => setVendors(data['vendors']))
+    }, []);
     const handleClick = (num) => {
         setCurrentView(num)
-    }
+    };
     const [formData, setFormData] = useState({
         name: "",
         breed: "",
@@ -82,27 +82,27 @@ export const AddDog = () => {
                     <h2>Basic Information</h2>
                     <div className={styles["form-grid"]}>
                         <div className={styles["form-group"]}>
-                            <label htmlFor="name">Dog Name*</label>
+                            <label htmlFor="name">Dog Name</label>
                             <input type="text" id="name" name="name"
                                 value={formData.name}
                                 onChange={handleChange}
                                 required />
                         </div>
                         <div className={styles["form-group"]}>
-                            <label htmlFor="breed">Breed*</label>
+                            <label htmlFor="breed">Breed</label>
                             <input type="text" id="breed" name="breed"
                                 value={formData.breed}
                                 onChange={handleChange}
                                 required />
                         </div>
                         <div className={styles["form-group"]}>
-                            <label htmlFor="age">Age*</label>
+                            <label htmlFor="age">Age</label>
                             <input type="number" id="age" name="age"
                                 value={formData.age}
                                 onChange={handleChange} required />
                         </div>
                         <div className={styles["form-group"]}>
-                            <label htmlFor="sex">Gender*</label>
+                            <label htmlFor="sex">Gender</label>
                             <select id="sex" name="sex"
                                 value={formData.sex}
                                 onChange={handleChange} required>
@@ -118,14 +118,14 @@ export const AddDog = () => {
                     <h2>Health Information</h2>
                     <div className={styles["form-grid"]}>
                         <div className={styles["form-group"]}>
-                            <label htmlFor="weight">Weight (lbs)*</label>
+                            <label htmlFor="weight">Weight (lbs)</label>
                             <input type="number" id="weight" name="weight"
                                 value={formData.weight}
                                 onChange={handleChange}
                                 required />
                         </div>
                         <div className={styles["form-group"]}>
-                            <label htmlFor="altered">Altered*</label>
+                            <label htmlFor="altered">Altered</label>
                             <select id="altered" name="altered"
                                 value={formData.altered}
                                 onChange={handleChange} required>
@@ -146,7 +146,7 @@ export const AddDog = () => {
                             <select id="microchipVendor" name="microchipVendor"
                                 value={formData.microchipVendor}
                                 onChange={handleChange} >
-                            {vendors.map((vendor)=><option value ={vendor}>{vendor}</option>)}
+                                {vendors.map((vendor) => <option value={vendor}>{vendor}</option>)}
                             </select>
                         </div>
                         <div className={styles["form-group full-width"]}>
@@ -160,14 +160,14 @@ export const AddDog = () => {
                     <h2>Surrender Information</h2>
                     <div className={styles["form-grid"]}>
                         <div className={styles["form-group"]}>
-                            <label htmlFor="surrenderDate">Surrender Date*</label>
+                            <label htmlFor="surrenderDate">Surrender Date</label>
                             <input type="date" id="surrenderDate" name="surrenderDate"
                                 value={formData.surrenderDate}
                                 onChange={handleChange}
                                 required />
                         </div>
                         <div className={styles["form-group"]}>
-                            <label htmlFor="surrenderType">Surrender Type*</label>
+                            <label htmlFor="surrenderType">Surrender Type</label>
                             <select id="surrenderType" name="surrenderType"
                                 value={formData.surrenderType}
                                 onChange={handleChange} required>
@@ -198,7 +198,7 @@ export const AddDog = () => {
                     <h2>Additional Information</h2>
                     <div className={styles["form-grid"]}>
                         <div className={styles["form-group full-width"]}>
-                            <label htmlFor="description">Description*</label>
+                            <label htmlFor="description">Description</label>
                             <textarea id="description" name="description" rows="4"
                                 value={formData.description}
                                 onChange={handleChange}
@@ -206,7 +206,7 @@ export const AddDog = () => {
                             ></textarea>
                         </div>
                         <div className={styles["form-group"]}>
-                            <label htmlFor="status">Status*</label>
+                            <label htmlFor="status">Status</label>
                             <select id="status" name="status" required>
                                 <option value="">Select Status</option>
                                 <option value="available">Available</option>
