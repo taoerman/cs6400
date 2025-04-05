@@ -8,7 +8,7 @@ class Command(BaseCommand):
         with connection.cursor() as cursor:
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS Application (
-                    adopterEmail VARCHAR(255) PRIMARY KEY,
+                    adopterEmail VARCHAR(255),
                     adopterFirstName VARCHAR(100) NOT NULL,
                     adopterLastName VARCHAR(100) NOT NULL,
                     adopterPhoneNumber VARCHAR(20),
@@ -20,8 +20,8 @@ class Command(BaseCommand):
                     applicationDate DATE NOT NULL,
                     isApproved BOOLEAN DEFAULT 0,
                     isRejected BOOLEAN DEFAULT 0,
-                    approvedDate DATE,
-                    rejectedDate DATE,
+                    approvedDate DATE DEFAULT NULL,
+                    rejectedDate DATE DEFAULT NULL,
                     CONSTRAINT unique_application_per_day UNIQUE (adopterEmail, applicationDate)
                 )
             """)

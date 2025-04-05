@@ -3,6 +3,7 @@ from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.db import connection
+import re
 
 @csrf_exempt
 def get_all_expenses(request):
@@ -30,8 +31,7 @@ def get_expense_categories(request):
                 AND COLUMN_NAME = 'expenseCategory'
             """)
             enum_data = cursor.fetchone()[0]
-
-            categories = enum_data.replace("enum(", "").replace(")", "").replace("'", "").split(",")
+            categories = re.findall(r"'([^']*)'", enum_data)
 
         return JsonResponse({'categories': categories}, status=200)
 

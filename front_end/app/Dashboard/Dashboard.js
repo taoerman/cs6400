@@ -4,7 +4,7 @@ import { Dogdashboard } from "../Dog/Dogdashboard";
 import { AddDog } from "../Dog/Adddog";
 import { DogDetail } from "../Dog/Dogdetail";
 import { Expense } from "../Expense/Expense";
-import { Adoption } from "../Adoption/Adoption";
+import { Adoption } from "../Adoption/AddAdoptionApplication";
 import { useView } from '@/contexts/ViewContext';
 import { Report } from "../Report/Report";
 import { Volunteer } from "../Volunteer/Volunteer";

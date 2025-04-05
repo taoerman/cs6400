@@ -33,7 +33,7 @@ export const Dogdashboard = () => {
     setCurrentView(num)
   }
   const checkAdoptable = (dog) => {
-    if (dog.altered && dog.microchipID.length != 0)
+    if (dog.altered && dog.microchipID)
       return 'Yes'
     else
       return 'No'
@@ -94,7 +94,6 @@ export const Dogdashboard = () => {
               <th>Adoptable</th>
               <th>Surrender Date</th>
               <th>Expense Incurred</th>
-              <th>Application</th>
             </tr>
           </thead>
           <tbody>
@@ -106,7 +105,7 @@ export const Dogdashboard = () => {
                     setDogId(dog.id);
                   }} >
                     <td>{dog.name}</td>
-                    <td>{dog.breed ? JSON.parse(dog.breed).join(', ') : ''}</td>
+                    <td>{dog.breeds ? dog.breeds.join(' / ') : ''}</td>
                     <td>{dog.sex}</td>
                     <td>{dog.altered ? 'Yes' : 'No'}</td>
                     <td>{dog.ageForMonths}</td>
@@ -119,21 +118,6 @@ export const Dogdashboard = () => {
                         setDogId(dog.id);
                       }}
                         className={styles["detail-link"]}>Add Expense</button>
-                    </td>
-
-                    <td>
-                      <button onClick={(e) => {
-                        if (dog.altered && dog.microchipID != null) {
-                          e.stopPropagation();
-                          handleClick(5);
-                          setDogId(dog.id);
-                        }
-                      }}
-                        disabled={!(dog.altered && dog.microchipID.length != 0)}
-                        className={dog.altered && dog.microchipID.length != 0 ? styles["detail-link"] : `${styles["action-btn"]} ${styles["disabled-btn"]}`}
-                      >  {dog.altered && dog.microchipID.length != 0
-                        ? "Adoption Application"
-                        : "Not Available for Adoption"}</button>
                     </td>
                   </tr>
                 )

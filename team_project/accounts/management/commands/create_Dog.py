@@ -14,13 +14,9 @@ class Command(BaseCommand):
                     altered BOOLEAN NOT NULL,
                     ageForMonths INT NOT NULL,
                     description TEXT,
-                    microchipID VARCHAR(100) UNIQUE,
+                    microchipID VARCHAR(100) UNIQUE DEFAULT NULL,
                     microchipVendor ENUM(
-                        'AKC Reunite', 'AVID', 'Banfield TruPaws', 'BarkCode Solutions',
-                        'CritterID Systems', 'Datamars', 'Destron Fearing', 'FurSecure ID',
-                        'FurTrack Microchips', 'FurryTag Systems', 'HomeAgain', 'LifeChip',
-                        'PawID Technologies', 'PawPrint ID', 'PawTech Microchips', 'PetGuardian Chips',
-                        'PetLink', 'PetSafe Chips', 'Trovan', '24PetWatch'
+                        'PetSafe Chips', 'AVID', 'FurSecure ID', 'AKC Reunite', 'PawPrint ID', 'Trovan', 'PetLink', 'PawID Technologies', 'CritterID Systems', 'BarkCode Solutions', 'Destron Fearing', 'FurTrack Microchips', 'Datamars', '24PetWatch', 'PawTech Microchips', 'PetGuardian Chips', 'HomeAgain', 'FurryTag Systems', 'LifeChip', 'Banfield TruPaws'
                     ),
                     surrenderDate DATE NOT NULL,
                     surrenderPhone VARCHAR(20),
