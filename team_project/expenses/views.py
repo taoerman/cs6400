@@ -41,7 +41,7 @@ def get_expense_categories(request):
 @csrf_exempt
 def add_expense(request):
     if request.method != 'POST':
-        return JsonResponse({'error' : {'Only POST Allowed'}})
+        return JsonResponse({'error' : {'Only POST Allowed'}, status=405)
 
     try:
         data = json.loads(request.body)
@@ -51,10 +51,6 @@ def add_expense(request):
         expenseVendor = data['expenseVendor']
         expenseCategory = data['expenseCategory']
         expenseAmount = data['expenseAmount']
-
-        valid_categories = ['medical', 'supplies', 'food', 'grooming', 'training', 'other']
-        if expenseCategory not in valid_categories:
-            return HttpResponseBadRequest("Invalid expense category")
 
         # Expense amount (must be ≥ 0.00)
         if float(expenseAmount) < 0:

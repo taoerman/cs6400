@@ -26,6 +26,7 @@ class Command(BaseCommand):
                     surrenderDate DATE NOT NULL,
                     surrenderPhone VARCHAR(20),
                     surrenderedByAnimalControl BOOLEAN NOT NULL,
+                    user_email VARCHAR(255),
                     CHECK (
                         surrenderedByAnimalControl = FALSE OR surrenderPhone IS NOT NULL
                     )

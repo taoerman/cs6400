@@ -15,7 +15,6 @@ def add_adoption_application(request):
 
     try:
         data = json.loads(request.body)
-        print("data get from frontend: ", data)
 
         adopterEmail = data['adopterEmail']
         firstName = data['firstName']
@@ -27,35 +26,42 @@ def add_adoption_application(request):
         phoneNumber = data['phoneNumber']
         householdSize = data['householdSize']
         applicationDate = data['applicationDate']
-        dogID = data['dogID']
 
         with connection.cursor() as cursor:
-            # Check if adopter exists
-            cursor.execute("SELECT adopterID FROM Adopter WHERE adopterEmail = %s", [adopterEmail])
-            row = cursor.fetchone()
-
-            if row:
-                adopterID = row[0]
-                print("1")
-            else:
-                # Insert new adopter
-                cursor.execute("""
-                    INSERT INTO Adopter (adopterEmail, firstName, lastName, street, city, state, zipCode, phoneNumber, householdSize)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """, [adopterEmail, firstName, lastName, street, city, state, zipCode, phoneNumber, householdSize])
-                adopterID = cursor.lastrowid
-
-            # UNIQUE (adopterID, applicationDate) to ensure only one application per adopter per day
-            try:
-                cursor.execute("""
-                                   INSERT INTO Application (adopterID,  dogID, applicationDate, applicationStatus)
-                                   VALUES (%s, %s, %s, 'pending approval')
-                               """, [adopterID, dogID, applicationDate])
-            except IntegrityError:
+            # Check if a duplicate application exists for this adopter on the same date
+            cursor.execute("""
+                SELECT 1 FROM Application
+                WHERE adopterEmail = %s AND applicationDate = %s
+            """, [adopterEmail, applicationDate])
+            if cursor.fetchone():
                 return HttpResponseBadRequest("One application per adopter per day.")
+
+            # Check if there is already a pending application for this adopter
+            cursor.execute("""
+                            SELECT 1 FROM Application
+                            WHERE adopterEmail = %s AND isApproved = 0 AND isRejected = 0
+                        """, [adopterEmail])
+            if cursor.fetchone():
+                return HttpResponseBadRequest("You already have a pending application.")
+
+            # Insert into Application table
+            cursor.execute("""
+                INSERT INTO Application (
+                    adopterEmail, adopterFirstName, adopterLastName, adopterPhoneNumber,
+                    AdopterStreet, adopterCity, adopterState, adopterZipCode, adopterHouseholdSize,
+                    applicationDate, isApproved, isRejected
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0, 0)
+            """, [
+                adopterEmail, firstName, lastName, phoneNumber,
+                street, city, state, zipCode, householdSize,
+                applicationDate
+            ])
 
         return JsonResponse({"message": "Application submitted successfully."})
 
+    except IntegrityError:
+        return HttpResponseBadRequest("One application per adopter per day (unique constraint failed).")
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
 
@@ -71,29 +77,42 @@ def update_application_status(request):
 
     try:
         data = json.loads(request.body)
-        application_id = data.get('applicationID')
-        new_status = data.get('applicationStatus')  # should be 'approved' or 'rejected'
+        adopter_email = data.get('adopterEmail')
+        application_date = data.get('applicationDate')
+        new_status = data.get('applicationStatus')
 
-        if not application_id or new_status not in ['approved', 'rejected']:
+        if not adopter_email or not application_date or new_status not in ['approved', 'rejected']:
             return JsonResponse({'error': 'Missing or invalid data'}, status=400)
 
         with connection.cursor() as cursor:
-            # Make sure the application exists
-            cursor.execute("SELECT applicationStatus FROM Application WHERE applicationID = %s", [application_id])
+            # Make sure the application exists and is still pending
+            cursor.execute("""
+                SELECT isApproved, isRejected
+                FROM Application
+                WHERE adopterEmail = %s AND applicationDate = %s
+            """, [adopter_email, application_date])
             row = cursor.fetchone()
             if not row:
                 return JsonResponse({'error': 'Application not found'}, status=404)
-            if row[0] != 'pending approval':
+
+            if row[0] or row[1]:
                 return JsonResponse({'error': 'Only pending applications can be updated'}, status=400)
 
-            # Update the status
-            cursor.execute("""
-                UPDATE Application
-                SET applicationStatus = %s, statusDecisionDate = %s
-                WHERE applicationID = %s
-            """, [new_status, date.today(), application_id])
+            # Update application status
+            if new_status == 'approved':
+                cursor.execute("""
+                    UPDATE Application
+                    SET isApproved = 1, approvedDate = %s
+                    WHERE adopterEmail = %s AND applicationDate = %s
+                """, [date.today(), adopter_email, application_date])
+            else:
+                cursor.execute("""
+                    UPDATE Application
+                    SET isRejected = 1, rejectedDate = %s
+                    WHERE adopterEmail = %s AND applicationDate = %s
+                """, [date.today(), adopter_email, application_date])
 
-        return JsonResponse({'message': 'Application status updated successfully'}, status=200)
+        return JsonResponse({'message': f'Application {new_status} successfully'}, status=200)
 
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
@@ -104,46 +123,31 @@ def review_pending_applications(request):
     if request.method != 'GET':
         return JsonResponse({'error': 'Only GET allowed'}, status=405)
 
-    # Check if current user is ED
-    # if not request.session.get('isExecutiveDirector'):
-    #     return JsonResponse({'error': 'Permission denied'}, status=403)
-
     try:
         with connection.cursor() as cursor:
-            # Join Application, Adopter, and Dog tables
             cursor.execute("""
                 SELECT
-                    A.applicationID,
-                    A.applicationDate,
-                    Ad.adopterID,
-                    Ad.firstName,
-                    Ad.lastName,
-                    D.id,
-                    D.name AS dogName,
-                    A.applicationStatus,
-                    Ad.adopterEmail,
-                    Ad.phoneNumber
-                FROM Application A
-                JOIN Adopter Ad ON A.adopterID = Ad.adopterID
-                JOIN Dog D ON A.dogID = D.id
-                WHERE A.applicationStatus = 'pending approval'
-                ORDER BY A.applicationDate ASC
+                    adopterEmail,
+                    adopterFirstName,
+                    adopterLastName,
+                    adopterPhoneNumber,
+                    applicationDate,
+                    isApproved,
+                    isRejected
+                FROM Application
+                WHERE isApproved = 0 AND isRejected = 0
+                ORDER BY applicationDate ASC
             """)
             rows = cursor.fetchall()
-
 
         results = []
         for row in rows:
             results.append({
-                'applicationID': row[0],
-                'applicationDate': str(row[1]),
-                'adopterID': row[2],
-                'adopterName': f"{row[3]} {row[4]}",
-                'dogID': row[5],
-                'dogName': row[6],
-                'status': row[7],
-                'adopterEmail': row[8],
-                'phoneNumber': row[9]
+                'adopterEmail': row[0],
+                'adopterName': f"{row[1]} {row[2]}",
+                'phoneNumber': row[3],
+                'applicationDate': str(row[4]),
+                'status': 'pending'
             })
 
         return JsonResponse({'applications': results}, status=200)
@@ -162,19 +166,20 @@ def finalize_adoption(request):
     try:
         data = json.loads(request.body)
         dogID = data.get('dogID')
-        adopterID = data.get('adopterID')
+        adopterEmail = data.get('adopterEmail')
 
         with connection.cursor() as cursor:
+            # Check if there is an approved application for this dog + adopter
             cursor.execute("""
-                            SELECT applicationID FROM Application
-                            WHERE dogID = %s AND adopterID = %s AND applicationStatus = 'approved'
-                        """, [dogID, adopterID])
-            approved_app = cursor.fetchone()
+                SELECT applicationDate FROM Application
+                WHERE adopterEmail = %s AND isApproved = 1 AND isRejected = 0
+            """, [adopterEmail])
+            app_row = cursor.fetchone()
 
-            if not approved_app:
-                return JsonResponse({'error': 'No approved application found for this dog and adopter.'}, status=403)
+            if not app_row:
+                return JsonResponse({'error': 'No approved application found for this adopter.'}, status=403)
 
-            # Get total expenses
+            # Get total expenses for the dog
             cursor.execute("""
                 SELECT SUM(expenseAmount)
                 FROM Expense
@@ -183,7 +188,7 @@ def finalize_adoption(request):
             result = cursor.fetchone()[0]
             total_expenses = float(result) if result is not None else 0.0
 
-            # Check if dog is surrendered by animal control and get name, breed
+            # Get dog info
             cursor.execute("""
                 SELECT surrenderedByAnimalControl, name, breed
                 FROM Dog
@@ -196,25 +201,23 @@ def finalize_adoption(request):
             surrendered_by_ac, dog_name, dog_breed = dog_row
 
             # Determine adoption fee
-            # If (name = ‘Sideways’ AND breed LIKE ‘%Terrier%’), the adopter fee is waived (but still stored)
             if dog_name.lower() == 'sideways' and 'terrier' in dog_breed.lower():
                 fee = 0
             elif surrendered_by_ac:
-                # If surrenderedByAnimalControl is true, fee = 10% of total expenses; else 125% of total.
                 fee = round(total_expenses * 0.10, 2)
             else:
                 fee = round(total_expenses * 1.25, 2)
 
             # Insert into Adoption table
             cursor.execute("""
-                INSERT INTO Adoption (dogID, adopterID, adoptionDate, adoptionFee)
-                VALUES (%s, %s, CURRENT_DATE, %s)
-            """, [dogID, adopterID, fee])
+                INSERT INTO Adoption (dogID, adopterEmail, applicationDate, adoptionDate)
+                VALUES (%s, %s, %s, CURRENT_DATE)
+            """, [dogID, adopterEmail, app_row[0]])
 
         return JsonResponse({
             'message': 'Adoption finalized successfully',
             'dogID': dogID,
-            'adopterID': adopterID,
+            'adopterEmail': adopterEmail,
             'adoptionFee': fee
         }, status=201)
 

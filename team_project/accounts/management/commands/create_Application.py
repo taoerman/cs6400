@@ -8,16 +8,22 @@ class Command(BaseCommand):
         with connection.cursor() as cursor:
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS Application (
-                    applicationID INT AUTO_INCREMENT PRIMARY KEY,
-                    adopterID INT NOT NULL,
-                    dogID INT NOT NULL,
+                    adopterEmail VARCHAR(255) PRIMARY KEY,
+                    adopterFirstName VARCHAR(100) NOT NULL,
+                    adopterLastName VARCHAR(100) NOT NULL,
+                    adopterPhoneNumber VARCHAR(20),
+                    AdopterStreet VARCHAR(255),
+                    adopterCity VARCHAR(100),
+                    adopterState VARCHAR(100),
+                    adopterZipCode VARCHAR(20),
+                    adopterHouseholdSize INT,
                     applicationDate DATE NOT NULL,
-                    applicationStatus VARCHAR(20) NOT NULL CHECK (applicationStatus IN ('pending approval', 'approved', 'rejected')),
-                    statusDecisionDate DATE DEFAULT NULL,
-                    CONSTRAINT fk_adopter FOREIGN KEY (adopterID) REFERENCES Adopter(adopterID),
-                    CONSTRAINT fk_dog FOREIGN KEY (dogID) REFERENCES Dog(id),
-                    CONSTRAINT unique_adopter_date UNIQUE (adopterID, applicationDate)
-                );
+                    isApproved BOOLEAN DEFAULT 0,
+                    isRejected BOOLEAN DEFAULT 0,
+                    approvedDate DATE,
+                    rejectedDate DATE,
+                    FOREIGN KEY (dogID) REFERENCES Dog(id),
+                    CONSTRAINT unique_application_per_day UNIQUE (a_email, applicationDate)
+                )
             """)
-            # UNIQUE (adopterID, applicationDate) to ensure only one application per adopter per day
         self.stdout.write(self.style.SUCCESS("Application table created successfully."))

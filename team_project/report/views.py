@@ -25,7 +25,7 @@ def animal_control_report(request):
             end_date = today if i == 6 else datetime(year, month, end_day)
 
             with connection.cursor() as cursor:
-                # Surrendered by animal control
+                # Count of dogs surrendered by animal control
                 cursor.execute("""
                     SELECT COUNT(*) FROM Dog
                     WHERE surrenderedByAnimalControl = 1
@@ -33,23 +33,23 @@ def animal_control_report(request):
                 """, [start_date, end_date])
                 surrendered = cursor.fetchone()[0]
 
-                # Adopted in rescue 60+ days
+                # Count of dogs adopted with 60+ days in rescue
                 cursor.execute("""
                     SELECT COUNT(*) FROM Adoption A
                     JOIN Dog D ON A.dogID = D.id
-                    WHERE A.AdoptionDate BETWEEN %s AND %s
-                    AND D.surrenderDate <= DATE_SUB(A.AdoptionDate, INTERVAL 59 DAY)
+                    WHERE A.adoptionDate BETWEEN %s AND %s
+                    AND D.surrenderDate <= DATE_SUB(A.adoptionDate, INTERVAL 59 DAY)
                 """, [start_date, end_date])
                 adopted_60plus = cursor.fetchone()[0]
 
-                # Total expenses for dogs adopted
+                # Sum of expenses for dogs adopted in this month
                 cursor.execute("""
                     SELECT SUM(E.expenseAmount)
                     FROM Expense E
                     JOIN Adoption A ON E.dogID = A.dogID
-                    WHERE A.AdoptionDate BETWEEN %s AND %s
+                    WHERE A.adoptionDate BETWEEN %s AND %s
                 """, [start_date, end_date])
-                expenses = cursor.fetchone()[0] or 0
+                expenses = cursor.fetchone()[0] or 0.0
 
             results.append({
                 'month': start_date.strftime('%Y-%m'),
@@ -71,14 +71,23 @@ def animal_control_monthly_details(request):
         return JsonResponse({'error': 'Only GET allowed'}, status=405)
 
     try:
-        month = int(request.GET.get('month'))
-        year = int(request.GET.get('year'))
+        month = request.GET.get('month')
+        year = request.GET.get('year')
+
+        if not month or not year:
+            return JsonResponse({'error': 'Missing month or year'}, status=400)
+
+        try:
+            month = int(month)
+            year = int(year)
+        except ValueError:
+            return JsonResponse({'error': 'Month and year must be integers'}, status=400)
 
         if not (1 <= month <= 12):
             return JsonResponse({'error': 'Invalid month'}, status=400)
 
         start_date = datetime(year, month, 1).date()
-        end_day = calendar.monthrange(year, month)[1]
+        end_day = monthrange(year, month)[1]
         end_date = datetime(year, month, end_day).date()
 
         animal_control_surrenders = []
@@ -161,42 +170,40 @@ def animal_control_monthly_details(request):
 
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
+
 # {
 #   "month": "April",
 #   "year": 2025,
 #   "animal_control_surrenders": [
 #     {
 #       "dogID": 1,
-#       "breed": "Beagle, Poodle",
+#       "breed": "Bulldog, Terrier",
 #       "sex": "Male",
 #       "altered": true,
-#       "microchipID": "MC123456",
-#       "surrenderDate": "2025-04-05"
+#       "microchipID": "MC0001",
+#       "surrenderDate": "2025-04-02"
 #     }
-#     ...
 #   ],
 #   "adopted_60_plus_days": [
 #     {
 #       "dogID": 2,
-#       "breed": "Boxer",
+#       "breed": "Beagle",
 #       "sex": "Female",
-#       "microchipID": "MC789123",
-#       "surrenderDate": "2024-12-01",
-#       "daysInRescue": 122
+#       "microchipID": "MC0002",
+#       "surrenderDate": "2025-01-01",
+#       "daysInRescue": 90
 #     }
-#     ...
 #   ],
 #   "adoption_expenses": [
 #     {
 #       "dogID": 2,
-#       "breed": "Boxer",
+#       "breed": "Beagle",
 #       "sex": "Female",
-#       "microchipID": "MC789123",
-#       "surrenderDate": "2024-12-01",
+#       "microchipID": "MC0002",
+#       "surrenderDate": "2025-01-01",
 #       "surrenderedByAnimalControl": false,
-#       "totalExpenses": 312.50
+#       "totalExpenses": 183.45
 #     }
-#     ...
 #   ]
 # }
 
@@ -206,7 +213,6 @@ def monthly_adoption_report(request):
     if request.method != 'GET':
         return JsonResponse({'error': 'Only GET allowed'}, status=405)
 
-    # Check if user is ED
     if not request.session.get("isExecutiveDirector"):
         return JsonResponse({"error": "Unauthorized"}, status=403)
 
@@ -214,34 +220,34 @@ def monthly_adoption_report(request):
         with connection.cursor() as cursor:
             cursor.execute("""
                 SELECT 
-                    MONTH(a.adoptionDate) AS monthNum,
-                    COUNT(a.dogID) AS totalAdopted,
-                    COALESCE(SUM(a.adoptionFee), 0) AS totalFees,
-                    COALESCE(SUM(e.expenseAmount), 0) AS totalExpenses,
-                    COALESCE(SUM(a.adoptionFee), 0) - COALESCE(SUM(e.expenseAmount), 0) AS netProfit
+                    YEAR(a.adoptionDate) AS year,
+                    MONTH(a.adoptionDate) AS month,
+                    COUNT(DISTINCT a.dogID) AS totalAdopted,
+                    COALESCE(SUM(e.expenseAmount), 0) AS totalExpenses
                 FROM Adoption a
                 JOIN Dog d ON a.dogID = d.id
                 LEFT JOIN Expense e ON d.id = e.dogID
-                WHERE a.adoptionDate >= DATE_SUB(CURRENT_DATE, INTERVAL 12 MONTH)
-                GROUP BY MONTH(a.adoptionDate)
-                ORDER BY MONTH(a.adoptionDate)
+                WHERE a.adoptionDate >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+                GROUP BY YEAR(a.adoptionDate), MONTH(a.adoptionDate)
+                ORDER BY YEAR(a.adoptionDate), MONTH(a.adoptionDate)
             """)
-
             rows = cursor.fetchall()
+
             result = []
             for row in rows:
+                year, month_num = row[0], row[1]
                 result.append({
-                    "month": row[0],
-                    "totalAdopted": row[1],
-                    "totalFees": float(row[2]),
+                    "month": f"{calendar.month_name[month_num]} {year}",
+                    "totalAdopted": row[2],
                     "totalExpenses": float(row[3]),
-                    "netProfit": float(row[4])
                 })
 
-            return JsonResponse({"data": result}, status=200)
+        return JsonResponse({"report": result}, status=200)
 
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
+
+
 
 @csrf_exempt
 def expense_analysis(request):
