@@ -9,4 +9,5 @@ urlpatterns = [
     path("dogs/shelter_capacity/", views.shelter_capacity),
     path("dogs/get_vendors/", views.get_vendors),
     path("dogs/edit_vendor/", views.edit_vendor),
+    path("dogs/show_all_breeds/", views.show_all_breeds),
 ]

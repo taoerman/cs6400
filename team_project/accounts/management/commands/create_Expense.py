@@ -2,7 +2,7 @@ from django.db import connection
 from django.core.management.base import BaseCommand
 
 class Command(BaseCommand):
-    help = "Create Expense table"
+    help = "Create Expense table with updated categories"
 
     def handle(self, *args, **kwargs):
         with connection.cursor() as cursor:
@@ -12,7 +12,12 @@ class Command(BaseCommand):
                     dogID INT NOT NULL,
                     expenseDate DATE NOT NULL,
                     expenseVendor VARCHAR(255) NOT NULL,
-                    expenseCategory ENUM('medical', 'supplies', 'food', 'grooming', 'training') NOT NULL,
+                    expenseCategory ENUM(
+                        'Veterinarian fees', 'Dental care', 'Treats and Toys',
+                        'Shelter supplies', 'Transportation', 'Medications',
+                        'Food supplies', 'Leashes, collars, harnesses',
+                        'Grooming supplies', 'Miscellaneous'
+                    ) NOT NULL,
                     expenseAmount DECIMAL(10, 2) NOT NULL CHECK (expenseAmount >= 0),
                     FOREIGN KEY (dogID) REFERENCES Dog(id)
                 )

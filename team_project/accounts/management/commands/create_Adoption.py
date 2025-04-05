@@ -8,13 +8,11 @@ class Command(BaseCommand):
         with connection.cursor() as cursor:
             cursor.execute("""
                             CREATE TABLE IF NOT EXISTS Adoption (
-                                adoptionID INT AUTO_INCREMENT PRIMARY KEY,
                                 dogID INT NOT NULL,
-                                adopterID INT NOT NULL,
-                                adoptionFee DECIMAL(10, 2) NOT NULL,
-                                AdoptionDate DATE NOT NULL,
-                                FOREIGN KEY (dogID) REFERENCES Dog(id),
-                                FOREIGN KEY (adopterID) REFERENCES Adopter(adopterID)
+                                adopterEmail VARCHAR(255) NOT NULL,
+                                applicationDate DATE NOT NULL,
+                                adoptionDate DATE NOT NULL,
+                                FOREIGN KEY (dogID) REFERENCES Dog(id)
                             );
                         """)
         self.stdout.write(self.style.SUCCESS("adoption table created."))
