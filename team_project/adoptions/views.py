@@ -243,3 +243,27 @@ def get_all_adoptions(request):
 
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
+
+@csrf_exempt
+def is_adopted(request, dog_id):
+    """
+    GET /adoptions/is_adopted/<dog_id>/
+    """
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Only GET allowed'}, status=405)
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT COUNT(*) FROM Adoption
+                WHERE dogID = %s
+            """, [dog_id])
+            result = cursor.fetchone()[0]
+
+        return JsonResponse({
+            'dogID': dog_id,
+            'isAdopted': result > 0
+        }, status=200)
+
+    except Exception as e:
+        return HttpResponseBadRequest(f"Error: {str(e)}")
