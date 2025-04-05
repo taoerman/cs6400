@@ -22,8 +22,7 @@ class Command(BaseCommand):
                     isRejected BOOLEAN DEFAULT 0,
                     approvedDate DATE,
                     rejectedDate DATE,
-                    FOREIGN KEY (dogID) REFERENCES Dog(id),
-                    CONSTRAINT unique_application_per_day UNIQUE (a_email, applicationDate)
+                    CONSTRAINT unique_application_per_day UNIQUE (adopterEmail, applicationDate)
                 )
             """)
         self.stdout.write(self.style.SUCCESS("Application table created successfully."))
