@@ -5,8 +5,12 @@ export const AddDog = () => {
     const { setCurrentView, currentView } = useView();
     const [vendors, setVendors] = useState([]);
     useEffect(() => {
-        fetch('http://127.0.0.1:8000/dogs/get_vendors/').then((data) => data.json())
-            .then((data) => setVendors(data['vendors']))
+        fetch('http://127.0.0.1:8000/dogs/get_vendors/')
+            .then((data) => data.json())
+            .then((data) => {
+                console.log('data', data);
+                setVendors(data['vendors']);
+            })
     }, []);
     const handleClick = (num) => {
         setCurrentView(num)
@@ -146,7 +150,7 @@ export const AddDog = () => {
                             <select id="microchipVendor" name="microchipVendor"
                                 value={formData.microchipVendor}
                                 onChange={handleChange} >
-                                {vendors.map((vendor) => <option value={vendor}>{vendor}</option>)}
+                                {vendors.map((vendor, index) => <option key={index} value={vendor}>{vendor}</option>)}
                             </select>
                         </div>
                         <div className={styles["form-group full-width"]}>
