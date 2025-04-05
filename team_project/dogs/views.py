@@ -22,14 +22,18 @@ def get_all_dogs(request):
 
     try:
         with connection.cursor() as cursor:
-            # Get dog info
+            # 1. Get dog info
             cursor.execute("SELECT * FROM Dog")
             columns = [col[0] for col in cursor.description]
             dog_rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-            # Get breeds
+            # 2. Get breeds
             cursor.execute("SELECT dogID, breedName FROM Breeds")
             breed_rows = cursor.fetchall()
+
+            # 3. Get adopted dog IDs
+            cursor.execute("SELECT DISTINCT dogID FROM Adoption")
+            adopted_ids = set(row[0] for row in cursor.fetchall())
 
         breed_map = {}
         for dog_id, breed in breed_rows:
@@ -37,6 +41,7 @@ def get_all_dogs(request):
 
         for dog in dog_rows:
             dog['breeds'] = sorted(breed_map.get(dog['id'], []))
+            dog['is_adopted'] = dog['id'] in adopted_ids
 
         return JsonResponse(dog_rows, safe=False)
 
