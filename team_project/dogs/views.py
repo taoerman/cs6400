@@ -111,7 +111,6 @@ def add_dog(request):
             return JsonResponse({'error': 'Bulldogs named Uga are not allowed. You must change to another name'}, status=400)
 
         # Check shelter capacity
-        from .utils import get_current_shelter_status  # ensure this exists
         current, max_capacity = get_current_shelter_status()
         if current >= max_capacity:
             return JsonResponse({'error': f'Dog shelter is full (max {max_capacity} dogs)'}, status=400)
