@@ -128,7 +128,7 @@ def volunteers(request):
     try:
         with connection.cursor() as cursor:
             cursor.execute("""
-                SELECT userEmail, firstName, lastName, phoneNumber
+                SELECT userEmail, firstName, lastName, phoneNumber, birthDate
                 FROM User
                 WHERE isExecutiveDirector = FALSE
             """)
@@ -141,6 +141,7 @@ def volunteers(request):
                 'firstName': row[1],
                 'lastName': row[2],
                 'phoneNumber': row[3],
+                'birthDate': row[4],
             })
 
         return JsonResponse({'volunteers': volunteer_list}, status=200)

@@ -41,7 +41,6 @@ export const Dogdashboard = () => {
 
   const filteredData = data.filter(dog => {
     if (filter === 'all') return true;
-    console.log("eeee:", dog.microchipID);
     const isAdoptable = dog.altered && dog.microchipID.length != 0;
     return filter === 'adoptable' ? isAdoptable : !isAdoptable;
   });
