@@ -66,7 +66,6 @@ def animal_control_report(request):
 
 @csrf_exempt
 def animal_control_monthly_details(request):
-    # GET http://127.0.0.1:8080/report/animal_control_monthly_details?month=4&year=2025
     if request.method != 'GET':
         return JsonResponse({'error': 'Only GET allowed'}, status=405)
 
@@ -97,67 +96,76 @@ def animal_control_monthly_details(request):
         with connection.cursor() as cursor:
             # 1. Animal Control Surrenders
             cursor.execute("""
-                SELECT id, breed, sex, altered, microchipID, surrenderDate
+                SELECT id, sex, altered, microchipID, surrenderDate
                 FROM Dog
                 WHERE surrenderedByAnimalControl = 1
                   AND surrenderDate BETWEEN %s AND %s
                 ORDER BY id ASC
             """, [start_date, end_date])
 
-            for row in cursor.fetchall():
-                breed_list = sorted(json.loads(row[1]))
+            dog_rows = cursor.fetchall()
+            for row in dog_rows:
+                dog_id = row[0]
+                cursor.execute("SELECT breedName FROM Breeds WHERE dogID = %s", [dog_id])
+                breeds = sorted([b[0] for b in cursor.fetchall()])
                 animal_control_surrenders.append({
-                    'dogID': row[0],
-                    'breed': ", ".join(breed_list),
-                    'sex': row[2],
-                    'altered': bool(row[3]),
-                    'microchipID': row[4],
-                    'surrenderDate': row[5].strftime('%Y-%m-%d')
+                    'dogID': dog_id,
+                    'breed': ", ".join(breeds),
+                    'sex': row[1],
+                    'altered': bool(row[2]),
+                    'microchipID': row[3],
+                    'surrenderDate': row[4].strftime('%Y-%m-%d')
                 })
 
             # 2. Dogs adopted in rescue 60+ days
             cursor.execute("""
-                SELECT D.id, D.breed, D.sex, D.microchipID, D.surrenderDate, A.adoptionDate
+                SELECT D.id, D.sex, D.microchipID, D.surrenderDate, A.adoptionDate
                 FROM Dog D
                 JOIN Adoption A ON D.id = A.dogID
                 WHERE A.adoptionDate BETWEEN %s AND %s
             """, [start_date, end_date])
 
             for row in cursor.fetchall():
-                surrender_date = row[4]
-                adoption_date = row[5]
+                dog_id = row[0]
+                surrender_date = row[3]
+                adoption_date = row[4]
                 days_in_rescue = (adoption_date - surrender_date).days + 1
                 if days_in_rescue >= 60:
+                    cursor.execute("SELECT breedName FROM Breeds WHERE dogID = %s", [dog_id])
+                    breeds = sorted([b[0] for b in cursor.fetchall()])
                     adopted_60_plus_days.append({
-                        'dogID': row[0],
-                        'breed': ", ".join(sorted(json.loads(row[1]))),
-                        'sex': row[2],
-                        'microchipID': row[3],
+                        'dogID': dog_id,
+                        'breed': ", ".join(breeds),
+                        'sex': row[1],
+                        'microchipID': row[2],
                         'surrenderDate': surrender_date.strftime('%Y-%m-%d'),
                         'daysInRescue': days_in_rescue
                     })
 
-            # 3. Total expenses for adopted dogs
+            # 3. Expenses for adopted dogs
             cursor.execute("""
-                SELECT D.id, D.breed, D.sex, D.microchipID, D.surrenderDate, D.surrenderedByAnimalControl,
+                SELECT D.id, D.sex, D.microchipID, D.surrenderDate, D.surrenderedByAnimalControl,
                        IFNULL(SUM(E.expenseAmount), 0)
                 FROM Dog D
                 JOIN Adoption A ON D.id = A.dogID
                 LEFT JOIN Expense E ON D.id = E.dogID
                 WHERE A.adoptionDate BETWEEN %s AND %s
-                GROUP BY D.id, D.breed, D.sex, D.microchipID, D.surrenderDate, D.surrenderedByAnimalControl
+                GROUP BY D.id, D.sex, D.microchipID, D.surrenderDate, D.surrenderedByAnimalControl
                 ORDER BY D.id ASC
             """, [start_date, end_date])
 
             for row in cursor.fetchall():
+                dog_id = row[0]
+                cursor.execute("SELECT breedName FROM Breeds WHERE dogID = %s", [dog_id])
+                breeds = sorted([b[0] for b in cursor.fetchall()])
                 adoption_expenses.append({
-                    'dogID': row[0],
-                    'breed': ", ".join(sorted(json.loads(row[1]))),
-                    'sex': row[2],
-                    'microchipID': row[3],
-                    'surrenderDate': row[4].strftime('%Y-%m-%d'),
-                    'surrenderedByAnimalControl': bool(row[5]),
-                    'totalExpenses': float(row[6])
+                    'dogID': dog_id,
+                    'breed': ", ".join(breeds),
+                    'sex': row[1],
+                    'microchipID': row[2],
+                    'surrenderDate': row[3].strftime('%Y-%m-%d'),
+                    'surrenderedByAnimalControl': bool(row[4]),
+                    'totalExpenses': float(row[5])
                 })
 
         return JsonResponse({
@@ -170,43 +178,6 @@ def animal_control_monthly_details(request):
 
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
-
-# {
-#   "month": "April",
-#   "year": 2025,
-#   "animal_control_surrenders": [
-#     {
-#       "dogID": 1,
-#       "breed": "Bulldog, Terrier",
-#       "sex": "Male",
-#       "altered": true,
-#       "microchipID": "MC0001",
-#       "surrenderDate": "2025-04-02"
-#     }
-#   ],
-#   "adopted_60_plus_days": [
-#     {
-#       "dogID": 2,
-#       "breed": "Beagle",
-#       "sex": "Female",
-#       "microchipID": "MC0002",
-#       "surrenderDate": "2025-01-01",
-#       "daysInRescue": 90
-#     }
-#   ],
-#   "adoption_expenses": [
-#     {
-#       "dogID": 2,
-#       "breed": "Beagle",
-#       "sex": "Female",
-#       "microchipID": "MC0002",
-#       "surrenderDate": "2025-01-01",
-#       "surrenderedByAnimalControl": false,
-#       "totalExpenses": 183.45
-#     }
-#   ]
-# }
-
 
 @csrf_exempt
 def monthly_adoption_report(request):

@@ -15,17 +15,51 @@ def get_current_shelter_status():
         current_in_shelter = total_dogs - adopted_dogs
     return current_in_shelter, settings.MAX_SHELTER_CAPACITY
 
-
+@csrf_exempt
 def get_all_dogs(request):
     if request.method != 'GET':
         return JsonResponse({'error': 'Only GET method allowed'}, status=405)
 
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM Dog")
-        columns = [col[0] for col in cursor.description]
-        dogs = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    try:
+        with connection.cursor() as cursor:
+            # Get dog info
+            cursor.execute("SELECT * FROM Dog")
+            columns = [col[0] for col in cursor.description]
+            dog_rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-    return JsonResponse(dogs, safe=False)
+            # Get breeds
+            cursor.execute("SELECT dogID, breedName FROM Breeds")
+            breed_rows = cursor.fetchall()
+
+        breed_map = {}
+        for dog_id, breed in breed_rows:
+            breed_map.setdefault(dog_id, []).append(breed)
+
+        for dog in dog_rows:
+            dog['breeds'] = sorted(breed_map.get(dog['id'], []))
+
+        return JsonResponse(dog_rows, safe=False)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+# [
+#   {
+#     "id": 1,
+#     "name": "Buddy",
+#     "sex": "Male",
+#     "altered": true,
+#     "ageForMonths": 24,
+#     "description": "Friendly dog",
+#     "microchipID": "MC12345",
+#     "microchipVendor": "PetLink",
+#     "surrenderDate": "2025-04-01",
+#     "surrenderPhone": "1234567890",
+#     "surrenderedByAnimalControl": false,
+#     "user_email": "staff@dogshelter.org",
+#     "breeds": ["Labrador Retriever", "Poodle"]
+#   }
+# ]
 
 @csrf_exempt
 def shelter_capacity(request):
@@ -55,56 +89,69 @@ def add_dog(request):
             return JsonResponse({'error': 'User not authenticated'}, status=403)
 
         data = json.loads(request.body)
+
         # Extract fields
         name = data['name']
-        breed = json.dumps(data['breed'])
+        breed = data['breed']
         sex = data.get('sex', 'Unknown').capitalize()
-        print(sex)
         altered = 1 if data['altered'] else 0
-        print(altered)
         age = data['ageForMonths']
         surrendered_by_control = 1 if data['surrenderedByAnimalControl'] else 0
-        print(surrendered_by_control)
         surrender_phone = data.get('surrenderPhone')
         microchip_id = data.get('microchipID')
         microchip_vendor = data.get('microchipVendor')
         description = data.get('description', '')
 
-        # if animal control → phone is required
+        # Check required phone number
         if surrendered_by_control and not surrender_phone:
             return JsonResponse({'error': 'surrenderPhone is required when surrenderedByAnimalControl is true'}, status=400)
 
         # Bulldog + Uga restriction
-        if 'Bulldog' in breed and name.strip().lower() == 'uga':
-            return JsonResponse({
-                'error': 'Bulldogs named Uga are not allowed, You must change to another name',
-            }, status=400)
+        if 'bulldog' in breed.lower() and name.strip().lower() == 'uga':
+            return JsonResponse({'error': 'Bulldogs named Uga are not allowed. You must change to another name'}, status=400)
 
+        # Check shelter capacity
         current, max_capacity = get_current_shelter_status()
-
-        if current > max_capacity:
-            return JsonResponse({'error': f'Dog shelter is full (max {settings.MAX_SHELTER_CAPACITY} dogs)'}, status=400)
-
-        # Convert breed list to JSON string
-        # breed_json = json.dumps(breed)
+        if current >= max_capacity:
+            return JsonResponse({'error': f'Dog shelter is full (max {max_capacity} dogs)'}, status=400)
 
         with connection.cursor() as cursor:
-            # Check if microchipID already exists (if provided)
-            cursor.execute("SELECT COUNT(*) FROM Dog WHERE microchipID = %s", [microchip_id])
-            if cursor.fetchone()[0] > 0:
-                return JsonResponse({
-                    'error': 'A dog with this microchip ID already exists.',
-                }, status=400)
+            # Check if microchipID already exists
+            if microchip_id:
+                cursor.execute("SELECT COUNT(*) FROM Dog WHERE microchipID = %s", [microchip_id])
+                if cursor.fetchone()[0] > 0:
+                    return JsonResponse({'error': 'A dog with this microchip ID already exists.'}, status=400)
 
+            # Insert dog
             cursor.execute("""
-                INSERT INTO Dog (name, breed, sex, altered, ageForMonths, description,
+                INSERT INTO Dog (name, sex, altered, ageForMonths, description,
                     microchipID, microchipVendor, surrenderedByAnimalControl,
-                    surrenderPhone, surrenderDate,  user_email)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_DATE, %s)
+                    surrenderPhone, surrenderDate, user_email)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_DATE, %s)
             """, [
-                name, breed, sex, altered, age, description,
+                name, sex, altered, age, description,
                 microchip_id, microchip_vendor, surrendered_by_control, surrender_phone, user_email
             ])
+
+            dog_id = cursor.lastrowid
+
+            # Validate breed against ENUM list
+            cursor.execute("""
+                SELECT COLUMN_TYPE
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_NAME = 'Breeds' AND COLUMN_NAME = 'breedName'
+            """)
+            enum_data = cursor.fetchone()[0]
+            allowed_breeds = enum_data.replace("enum(", "").replace(")", "").replace("'", "").split(",")
+
+            if breed not in allowed_breeds:
+                return JsonResponse({'error': f"'{breed}' is not a valid breed."}, status=400)
+
+            # Insert into Breeds table
+            cursor.execute("""
+                INSERT INTO Breeds (dogID, breedName)
+                VALUES (%s, %s)
+            """, [dog_id, breed])
 
         return JsonResponse({'message': 'Dog added successfully!'}, status=201)
 
@@ -115,14 +162,22 @@ def add_dog(request):
 def get_dog_by_id(request, dog_id):
     try:
         with connection.cursor() as cursor:
+            # Get dog data
             cursor.execute("SELECT * FROM Dog WHERE id = %s", [dog_id])
             row = cursor.fetchone()
             if row is None:
-                return JsonResponse({'error' : 'Dog Not Found'}, status=404)
+                return JsonResponse({'error': 'Dog Not Found'}, status=404)
 
             columns = [col[0] for col in cursor.description]
             dog = dict(zip(columns, row))
+
+            # Get breed(s) for the dog
+            cursor.execute("SELECT breedName FROM Breeds WHERE dogID = %s", [dog_id])
+            breed_rows = cursor.fetchall()
+            dog['breeds'] = sorted([b[0] for b in breed_rows])
+
         return JsonResponse(dog, status=200)
+
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
 
@@ -141,7 +196,7 @@ def edit_dog(request, dog_id):
 
         data = json.loads((request.body))
         new_sex = data.get('sex')
-        new_breed = json.dumps(data.get('breed'))
+        # new_breed = json.dumps(data.get('breed'))
         new_microchip = data.get('microchipID')
 
         if new_sex not in ['Male', 'Female', 'Unknown']:
@@ -169,9 +224,9 @@ def edit_dog(request, dog_id):
         with connection.cursor() as cursor:
             cursor.execute("""
                 UPDATE Dog
-                SET sex = %s, breed = %s, microchipID = %s
+                SET sex = %s, microchipID = %s
                 WHERE id = %s
-            """, [new_sex, new_breed, new_microchip, dog_id])
+            """, [new_sex, new_microchip, dog_id])
 
         return JsonResponse({'message' : 'Dog updated successfully'})
 
@@ -246,71 +301,124 @@ def edit_vendor(request):
 
 
 @csrf_exempt
-def show_all_breeds(request):
+def get_breeds(request):
+    # {
+    #   "breeds": ["Akita", "Boxer", "Mixed", "Unknown", ...]
+    # }
     if request.method != 'GET':
         return JsonResponse({'error': 'Only GET allowed'}, status=405)
 
-    breeds = [
-        "Affenpinscher", "Afghan Hound", "Airedale Terrier", "Akbash Dog", "Akita",
-        "Alapaha Blue Blood Bulldog", "Alaskan Husky", "Alaskan Malamute", "American Bulldog",
-        "American Eskimo", "American Foxhound", "American Pit Bull Terrier", "American Staffordshire Terrier",
-        "American Water Spaniel", "Anatolian Shepherd Dog", "Aussiedoodle", "Australian Cattle Dog",
-        "Australian Kelpie", "Australian Shepherd", "Australian Terrier", "Azawakh", "Basador", "Basenji",
-        "Basset Bleu de Gascogne", "Basset Hound", "Beagle", "Bearded Collie", "Beauceron",
-        "Bedlington Terrier", "Belgian Laekenois", "Belgian Malinois", "Belgian Sheepdog", "Belgian Tervuren",
-        "Bergamasco", "Berger Picard", "Bernese Mountain Dog", "Bichon Frise", "Black and Tan Coonhound",
-        "Black Russian Terrier", "Bloodhound", "Blue Picardy Spaniel", "Bluetick Coonhound", "Boerboel",
-        "Bolognese", "Border Collie", "Border Terrier", "Borzoi", "Boston Terrier", "Bouvier des Flandres",
-        "Boxer", "Boykin Spaniel", "Bracco Italiano", "Briard", "Brittany", "Brussels Griffon",
-        "Bull Terrier", "Bulldog", "Bullmastiff", "Cairn Terrier", "Canaan Dog", "Cane Corso",
-        "Cardigan Welsh Corgi", "Catahoula Leopard Dog", "Caucasian Ovcharka", "Cavalier King Charles Spaniel",
-        "Cavapoo", "Cesky Terrier", "Chart Polski", "Chesapeake Bay Retriever", "Chihuahua",
-        "Chinese Crested", "Chinese Shar-Pei", "Chinook", "Chow Chow", "Chug", "Cirneco dell'Etna",
-        "Clumber Spaniel", "Cockapoo", "Cocker Spaniel", "Collie", "Coton de Tulear", "Curly-Coated Retriever",
-        "Dachshund", "Dalmatian", "Dandie Dinmont Terrier", "Doberman Pinscher", "Dogo Argentino",
-        "Dogue de Bordeaux", "Doxiepoo", "English Cocker Spaniel", "English Foxhound", "English Setter",
-        "English Springer Spaniel", "English Toy Spaniel", "Entlebucher Mountain Dog", "Eurasier",
-        "Field Spaniel", "Fila Brasileiro", "Finnish Lapphund", "Finnish Spitz", "Flat-Coated Retriever",
-        "Fox Terrier", "French Bulldog", "German Pinscher", "German Shepherd Dog", "German Shorthaired Pointer",
-        "German Spitz", "German Wirehaired Pointer", "Giant Schnauzer", "Glen of Imaal Terrier",
-        "Golden Retriever", "Goldendoodle", "Gordon Setter", "Great Dane", "Great Pyrenees",
-        "Greater Swiss Mountain Dog", "Greyhound", "Harrier", "Havanese", "Ibizan Hound",
-        "Icelandic Sheepdog", "Irish Red and White Setter", "Irish Setter", "Irish Terrier",
-        "Irish Water Spaniel", "Irish Wolfhound", "Italian Greyhound", "Jack Russell Terrier",
-        "Japanese Chin", "Keeshond", "Kerry Blue Terrier", "Komondor", "Kooikerhondje", "Kromfohrlander",
-        "Kuvasz", "Labradoodle", "Labrador Retriever", "Lacy Dog", "Lagotto Romagnolo", "Lakeland Terrier",
-        "Large Munsterlander", "Leonberger", "Lhasa Apso", "Lhasapoo", "Longdog", "Lowchen", "Lurcher",
-        "Maltese", "Maltipoo", "Manchester Terrier", "Mastiff", "Miniature American Shepherd",
-        "Miniature Bull Terrier", "Miniature Pinscher", "Miniature Schnauzer", "Mixed", "Mudi",
-        "Neapolitan Mastiff", "Newfoundland", "Norfolk Terrier", "Norwegian Buhund", "Norwegian Elkhound",
-        "Norwegian Lundehund", "Norwich Terrier", "Nova Scotia Duck Tolling Retriever", "Old English Sheepdog",
-        "Otterhound", "Papillon", "Pekingese", "Pembroke Welsh Corgi", "Perro de Presa Canario",
-        "Peruvian Inca Orchid", "Petit Basset Griffon Vendeen", "Pharaoh Hound", "Plott", "Pointer",
-        "Polish Lowland Sheepdog", "Pomapoo", "Pomeranian", "Pomsky", "Poodle", "Portuguese Podengo",
-        "Portuguese Water Dog", "Pug", "Pugapoo", "Puggle", "Puli", "Pumi", "Pyrenean Shepherd",
-        "Rat Terrier", "Redbone Coonhound", "Rhodesian Ridgeback", "Rottweiler", "Russian Toy", "Saluki",
-        "Samoyed", "Schapendoes", "Schipperke", "Schnauzer", "Schnoodle", "Scottish Deerhound",
-        "Scottish Terrier", "Sealyham Terrier", "Shetland Sheepdog", "Shiba Inu", "Shih Tzu", "Shihpoo",
-        "Siberian Husky", "Silken Windhound", "Silky Terrier", "Skye Terrier", "Sloughi",
-        "Small Munsterlander Pointer", "Soft Coated Wheaten Terrier", "Spanish Greyhound", "Spanish Water Dog",
-        "Spinone Italiano", "Sprollie", "Staffordshire Bull Terrier", "Standard Schnauzer", "Sussex Spaniel",
-        "Swedish Lapphund", "Swedish Vallhund", "Thai Ridgeback", "Tibetan Mastiff", "Tibetan Spaniel",
-        "Tibetan Terrier", "Tosa Ken", "Toy Fox Terrier", "Toy Poodle", "Treeing Walker Coonhound",
-        "Vizsla", "Volpino Italiano", "Weimaraner", "Welsh Springer Spaniel", "Welsh Terrier",
-        "West Highland White Terrier", "Whippet", "Wirehaired Pointing Griffon", "Wirehaired Vizsla",
-        "Xoloitzcuintli", "Yorkipoo", "Yorkshire Terrier", "Unknown"
-    ]
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT COLUMN_TYPE
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_NAME = 'Breeds'
+                AND COLUMN_NAME = 'breedName'
+            """)
+            enum_data = cursor.fetchone()[0]
 
-    return JsonResponse({'breeds': breeds}, status=200)
+            breeds = enum_data.replace("enum(", "").replace(")", "").replace("'", "").split(",")
 
+        return JsonResponse({'breeds': breeds}, status=200)
 
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+#
+# {
+#   "breeds": [
+#     "Affenpinscher",
+#     "Afghan Hound",
+#     "Akita",
+#     "Mixed",
+#     "Unknown"
+#   ]
+# }
 
+@csrf_exempt
+def get_breeds_by_dogID(request, dog_id):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Only GET allowed'}, status=405)
 
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT breedName FROM Breeds
+                WHERE dogID = %s
+                ORDER BY breedName ASC
+            """, [dog_id])
+            rows = cursor.fetchall()
 
+        if not rows:
+            return JsonResponse({'message': f'No breeds found for dog ID {dog_id}'}, status=404)
 
+        breeds = [row[0] for row in rows]
 
+        return JsonResponse({'dogID': dog_id, 'breeds': breeds}, status=200)
 
+    except Exception as e:
+        return HttpResponseBadRequest(f"Error: {str(e)}")
 
+# {
+#   "dogID": 2,
+#   "breeds": ["Boxer", "Pitbull"]
+# }
+
+@csrf_exempt
+def save_breed(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST allowed'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        dogID = data.get('dogID')
+        breed = data.get('breedName')
+
+        if not dogID or not breed:
+            return JsonResponse({'error': 'Missing dogID or breedName'}, status=400)
+
+        with connection.cursor() as cursor:
+            # Check if dog exists
+            cursor.execute("SELECT id FROM Dog WHERE id = %s", [dogID])
+            if not cursor.fetchone():
+                return JsonResponse({'error': 'Dog not found'}, status=404)
+
+            # Check valid ENUM value
+            cursor.execute("""
+                SELECT COLUMN_TYPE
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_NAME = 'Breeds'
+                AND COLUMN_NAME = 'breedName'
+            """)
+            enum_data = cursor.fetchone()[0]
+            allowed_breeds = enum_data.replace("enum(", "").replace(")", "").replace("'", "").split(",")
+
+            if breed not in allowed_breeds:
+                return JsonResponse({'error': f'Invalid breed: {breed}'}, status=400)
+
+            # Check existing breed for dog
+            cursor.execute("SELECT breedName FROM Breeds WHERE dogID = %s", [dogID])
+            existing = cursor.fetchone()
+
+            if existing and existing[0] not in ['Mixed', 'Unknown']:
+                return JsonResponse({'error': 'Breed already set and cannot be edited unless Mixed or Unknown'}, status=403)
+
+            # Replace existing breed
+            cursor.execute("DELETE FROM Breeds WHERE dogID = %s", [dogID])
+            cursor.execute("""
+                INSERT INTO Breeds (dogID, breedName)
+                VALUES (%s, %s)
+            """, [dogID, breed])
+
+        return JsonResponse({'message': 'Breed saved successfully'}, status=201)
+
+    except Exception as e:
+        return HttpResponseBadRequest(f"Error: {str(e)}")
+
+# {
+#   "dogID": 2,
+#   "breedName": "Australian Shepherd"
+# }
 
 
 

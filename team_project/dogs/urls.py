@@ -9,5 +9,7 @@ urlpatterns = [
     path("dogs/shelter_capacity/", views.shelter_capacity),
     path("dogs/get_vendors/", views.get_vendors),
     path("dogs/edit_vendor/", views.edit_vendor),
-    path("dogs/show_all_breeds/", views.show_all_breeds),
+    path("dogs/get_breeds/", views.get_breeds),
+    path("dogs/get_breeds_by_dogID/", views.get_breeds_by_dogID),
+    path("dogs/save_breed/", views.save_breed),
 ]
