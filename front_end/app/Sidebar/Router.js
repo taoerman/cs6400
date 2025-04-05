@@ -9,8 +9,6 @@ export const Router = () => {
       {userType == 3?(
         <>
       <Route title="Dog Dashboard" num = {1}/>
-      <Route title="Add Dog" num = {2}/>
-      <Route title="Expenses" num = {4}/>
       <Route title="Add Adoption" num = {5}/>
       <Route title="Adoption Review" num = {9}/>
       <Route title="Report" num = {6}/>
@@ -19,8 +17,6 @@ export const Router = () => {
       </>
       ):(<>
       <Route title="Dog Dashboard" num = {1}/>
-      <Route title="Add Dog" num = {2}/>
-      <Route title="Expenses" num = {4}/>
       <Route title="Add Adoption" num = {5}/>
       </>
       )}

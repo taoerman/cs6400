@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
 export const AddDog = () => {
     const { setCurrentView, currentView } = useView();
+    const [ vendors, setVendors ] = useState([]);
+    useEffect(()=>{
+        fetch('http://127.0.0.1:8000/dogs/get_vendors/').then((data)=>data.json())
+        .then((data)=>setVendors(data['vendors']))
+    },[])
     const handleClick = (num) => {
         setCurrentView(num)
     }
@@ -138,9 +143,11 @@ export const AddDog = () => {
                         </div>
                         <div className={styles["form-group"]}>
                             <label htmlFor="microchipVendor">Microchip Vendor</label>
-                            <input type="text" id="microchipVendor" name="microchipVendor"
+                            <select id="microchipVendor" name="microchipVendor"
                                 value={formData.microchipVendor}
-                                onChange={handleChange} />
+                                onChange={handleChange} >
+                            {vendors.map((vendor)=><option value ={vendor}>{vendor}</option>)}
+                            </select>
                         </div>
                         <div className={styles["form-group full-width"]}>
                             <label htmlFor="medicalHistory">Medical History</label>
