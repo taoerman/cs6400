@@ -9,16 +9,22 @@ export default function Home() {
   const [login, setLogin] = useState(1)
   const [userEmail, setUserEmail] = useState('');
   const setUserType = (email) => {
-    fetch('http://127.0.0.1:8000/accounts/users/?email=' + email).then((data) => data.json()).then((user) => {
-      if (user[0].isExecutiveDirector) {
-        setCookie('loginType', 3)
-        setLogin(3)
-      }
-      else {
-        setCookie('loginType', 2)
-        setLogin(2)
-      }
-    })
+    fetch('http://127.0.0.1:8000/accounts/users/?email=' + email)
+      .then((data) => data.json())
+      .then((users) => {
+        const user = users.filter(user => user['userEmail'] === email);
+        if (user.length === 0) {
+          return;
+        }
+
+        if (user[0].isExecutiveDirector) {
+          setCookie('loginType', 3)
+          setLogin(3)
+        } else {
+          setCookie('loginType', 2)
+          setLogin(2)
+        }
+      })
   }
   useEffect(() => {
     if (getCookie('loginType') !== "") {
