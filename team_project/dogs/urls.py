@@ -7,4 +7,6 @@ urlpatterns = [
     path("dogs/get_dog/<int:dog_id>/", views.get_dog_by_id),
     path("dogs/edit_dog/<int:dog_id>/", views.edit_dog),
     path("dogs/shelter_capacity/", views.shelter_capacity),
+    path("dogs/get_vendors/", views.get_vendors),
+    path("dogs/edit_vendor/", views.edit_vendor),
 ]
