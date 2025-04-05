@@ -10,6 +10,7 @@ import { Report } from "../Report/Report";
 import { Volunteer } from "../Volunteer/Volunteer";
 import { DrillDown } from "../Report/DrillDown";
 import { AdoptionReview } from '../Adoption/AdoptionReview'
+import { AddAdoption } from '../Adoption/AddAdoption'
 export const Dashboard = () => {
   const { currentView } = useView();
   const renderView = () => {
@@ -23,6 +24,7 @@ export const Dashboard = () => {
       case 7: return <DrillDown />;
       case 8: return <Volunteer />;
       case 9: return <AdoptionReview />;
+      case 10: return <AddAdoption />;
       default: return null;
     }
   };

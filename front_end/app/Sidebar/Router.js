@@ -20,6 +20,23 @@ export const Router = () => {
         <Route title="Add Adoption" num={5} />
       </>
       )}
+      {
+        process.env.NEXT_PUBLIC_DEBUG_MODE&&(
+          <>
+          <p>DEBUG:</p>
+        <Route title="Dogdashboard" num={1}/>
+        <Route title="AddDog" num={2}/>
+        <Route title="DogDetail" num={3}/>
+        <Route title="Expense" num={4}/>
+        <Route title="Adoption" num={5}/>
+        <Route title="Report" num={6}/>
+        <Route title="DrillDown" num={7}/>
+        <Route title="Volunteer" num={8}/>
+        <Route title="AdoptionReview" num={9}/>  
+        <Route title="AddAdoption" num={10}/>        
+          </>
+        )
+      }
     </div>
   );
 };
