@@ -2,7 +2,7 @@ from django.db import connection
 from django.core.management.base import BaseCommand
 
 class Command(BaseCommand):
-    help = "Create Dog table"
+    help = "Create Adoption table"
 
     def handle(self, *args, **kwargs):
         with connection.cursor() as cursor:
@@ -15,4 +15,4 @@ class Command(BaseCommand):
                                 FOREIGN KEY (dogID) REFERENCES Dog(id)
                             );
                         """)
-        self.stdout.write(self.style.SUCCESS("adoption table created."))
+        self.stdout.write(self.style.SUCCESS("Adoption table created."))

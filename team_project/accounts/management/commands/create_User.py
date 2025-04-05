@@ -18,3 +18,4 @@ class Command(BaseCommand):
                     password VARCHAR(255)
                 )
             """)
+        self.stdout.write(self.style.SUCCESS("User table created."))

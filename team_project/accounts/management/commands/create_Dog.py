@@ -10,7 +10,6 @@ class Command(BaseCommand):
                 CREATE TABLE IF NOT EXISTS Dog (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     name VARCHAR(255) NOT NULL,
-                    breed JSON NOT NULL,
                     sex ENUM('Male', 'Female', 'Unknown') NOT NULL,
                     altered BOOLEAN NOT NULL,
                     ageForMonths INT NOT NULL,
