@@ -58,11 +58,18 @@ export const Volunteer = () => {
   };
 
   const filterByBirthMonth = (volunteers, targetMonth) => {
-    // if (!targetMonth) return volunteers;
+
+    const parseDate = (dateStr) => {
+      const [year, month, day] = dateStr.split("-").map(Number);
+      return { year, month, day };
+    };
 
     return volunteers.filter((volunteer) => {
-      if (!volunteer.birthDate) return false;
-      const birthMonth = new Date(volunteer.birthDate).getMonth() + 1;
+      if (!volunteer.birthDate) {
+        return false;
+      }
+      const { year, month, day } = parseDate(volunteer.birthDate);
+      const birthMonth = new Date(year, month - 1, day).getMonth() + 1;
       return birthMonth.toString() === targetMonth;
     });
   };
