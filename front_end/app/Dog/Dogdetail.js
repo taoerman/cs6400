@@ -9,6 +9,7 @@ export const DogDetail = () => {
     });
     const [editing, setEditing] = useState(false)
     const [editData, setEditData] = useState({})
+    const [breedType, setBreedType] = useState([])
     const loadData = async () => {
         const res = await fetch('http://127.0.0.1:8000/dogs/get_dog/' + dogId);
         const result = await res.json();
@@ -25,6 +26,11 @@ export const DogDetail = () => {
         };
         setEditData(tempData);
     };
+    useEffect(()=>{
+        //fetch breed type
+        const data = ['Affenpinscher','Boykin Spaniel','Finnish Spitz','Manchester Terrier']
+        setBreedType(data)
+    },[])
 
     const { categoryTotals, grandTotal } = useMemo(() => {
         const totals = {};
@@ -115,11 +121,17 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Breed</label>
-                            {editing && ['Unknown', 'Mixed'].includes(JSON.parse(data.breed).join(', ')) ? <input type='text' value={editData.breed} onChange={(e) => handleInput(e, 'breed')} /> : <span>{data != null && data.breed ? JSON.parse(data.breed).join(', ') : ''}</span>}
+                            {editing && ['Unknown', 'Mixed'].includes(JSON.parse(data.breed).join(', ')) ?<select className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" value={editData.breed} onChange={(e) => handleInput(e, 'breed')}>
+  {breedType.map((breed) => (
+    <option key={breed} value={breed}>
+      {breed}
+    </option>
+  ))}
+</select>: <span>{data != null && data.breed ? JSON.parse(data.breed).join(', ') : ''}</span>}
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Sex</label>
-                            {editing && data?.sex === 'Unknown' ? <input type='text' value={editData.sex} onChange={(e) => handleInput(e, 'sex')} /> : <span>{data != null ? data.sex : ""}</span>}
+                            {editing ? (data?.sex === 'Male' ?<input className="outline-solid" type='text' value={editData.sex} onChange={(e) => handleInput(e, 'sex')} />:<span className="outline-solid">{data != null ? data.sex : ""}</span>) : <span>{data != null ? data.sex : ""}</span>}
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Age</label>
@@ -127,7 +139,7 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Altered</label>
-                            {editing && data.altered === false ? <input value={editData.altered} onChange={(e) => handleInput(e, 'altered')} /> : <span>{data != null ? (data.altered ? 'Yes' : 'No') : 'Unknown'}</span>}
+                            {editing ? (data.altered === false?<input className="outline-solid"  value={editData.altered} onChange={(e) => handleInput(e, 'altered')} />:<span className="outline-solid">{data != null?(data.altered?'Yes':'No'):'Unknown'}</span>) : <span>{data != null ? (data.altered ? 'Yes' : 'No') : 'Unknown'}</span>}
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Adoptable</label>
@@ -143,7 +155,7 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Microchip ID</label>
-                            {editing && data?.microchipID === null ? <input type='text' value={editData.microchipID} onChange={(e) => handleInput(e, 'chip')} /> : <span>{data != null ? data.microchipID : ""}</span>}
+                            {editing ? (data?.microchipID === null? <input className="outline-solid" type='text' value={editData.microchipID} onChange={(e) => handleInput(e, 'chip')} />:<span className="outline-solid">{data != null ? data.microchipID : ""}</span>) : <span>{data != null ? data.microchipID : ""}</span>}
                         </div>
                     </div>
                 </div>
