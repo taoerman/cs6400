@@ -72,8 +72,7 @@ def add_dog(request):
         # Bulldog + Uga restriction
         if 'Bulldog' in breed and name.strip().lower() == 'uga':
             return JsonResponse({
-                'error': 'Bulldogs named Uga are not allowed.',
-                'alert': 'You must change to another name.'
+                'error': 'Bulldogs named Uga are not allowed, You must change to another name',
             }, status=400)
 
         current, max_capacity = get_current_shelter_status()

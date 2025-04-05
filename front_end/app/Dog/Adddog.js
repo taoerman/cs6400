@@ -56,14 +56,14 @@ export const AddDog = () => {
             });
 
             if (!response.ok) {
-                throw new Error("Failed to add dog");
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Unknown error");
             }
 
             alert("Dog added successfully!");
             setCurrentView(1);
         } catch (error) {
-            console.error("Error:", error);
-            alert("Error adding dog");
+            alert(error.message);
         }
     };
     return (
