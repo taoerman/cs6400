@@ -173,6 +173,72 @@ def edit_dog(request, dog_id):
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
 
+@csrf_exempt
+def get_vendors(request):
+    # {
+    #   "vendors": ["PetLink", "AVID", "HomeAgain"]
+    # }
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Only GET allowed'}, status=405)
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT COLUMN_TYPE
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_NAME = 'Dog'
+                AND COLUMN_NAME = 'microchipVendor'
+            """)
+            enum_data = cursor.fetchone()[0]
+
+            vendors = enum_data.replace("enum(", "").replace(")", "").replace("'", "").split(",")
+
+        return JsonResponse({'vendors': vendors}, status=200)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+def edit_vendor(request):
+    # {
+    #   "microchipID": "MC555000333",
+    #   "microchipVendor": "HomeAgain"
+    # }
+
+    if request.method != 'PUT':
+        return JsonResponse({'error': 'Only PUT allowed'}, status=405)
+
+    try:
+        # Check if user is an Executive Director
+        if not request.session.get('isExecutiveDirector'):
+            return JsonResponse({'error': 'Only Executive Directors can edit vendor info.'}, status=403)
+
+        data = json.loads(request.body)
+        microchip_id = data.get('microchipID')
+        new_vendor = data.get('microchipVendor')
+
+        if not microchip_id or not new_vendor:
+            return JsonResponse({'error': 'microchipID and microchipVendor are required.'}, status=400)
+
+        with connection.cursor() as cursor:
+            # Check if the dog exists
+            cursor.execute("SELECT id FROM Dog WHERE microchipID = %s", [microchip_id])
+            row = cursor.fetchone()
+            if not row:
+                return JsonResponse({'error': 'Dog with given microchipID not found.'}, status=404)
+
+            # Update the vendor
+            cursor.execute("""
+                UPDATE Dog
+                SET microchipVendor = %s
+                WHERE microchipID = %s
+            """, [new_vendor, microchip_id])
+
+        return JsonResponse({'message': 'Vendor updated successfully!'}, status=200)
+
+    except Exception as e:
+        return HttpResponseBadRequest(f"Error: {str(e)}")
+
 
 
 
