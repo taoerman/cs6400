@@ -267,3 +267,37 @@ def is_adopted(request, dog_id):
 
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
+
+
+@csrf_exempt
+def get_all_applications(request):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Only GET allowed'}, status=405)
+
+    try:
+        with connection.cursor() as cursor:
+            # get all applications
+            cursor.execute("""
+                SELECT adopterEmail, adopterFirstName, adopterLastName,
+                       adopterPhoneNumber, AdopterStreet, adopterCity, adopterState,
+                       adopterZipCode, adopterHouseholdSize, applicationDate,
+                       isApproved, isRejected, approvedDate, rejectedDate
+                FROM Application
+                ORDER BY applicationDate DESC
+            """)
+            columns = [col[0] for col in cursor.description]
+            applications = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+            # get all (adopterEmail, applicationDate) that are in Adoption table
+            cursor.execute("SELECT adopterEmail, applicationDate FROM Adoption")
+            adopted_set = set(cursor.fetchall())
+
+        # annotate each application
+        for application in applications:
+            key = (application['adopterEmail'], application['applicationDate'])
+            application['adoptedAlready'] = key in adopted_set
+
+        return JsonResponse({'applications': apps}, status=200)
+
+    except Exception as e:
+        return HttpResponseBadRequest(f"Error: {str(e)}")

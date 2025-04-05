@@ -9,4 +9,5 @@ urlpatterns = [
     path('adoptions/finalize_adoption/', views.finalize_adoption),
     path('adoptions/get_all_adoptions/', views.get_all_adoptions),
     path('adoptions/is_adopted/<int:dog_id>/', views.is_adopted),
+    path('adoptions/get_all_applications/', views.get_all_applications),
 ]
