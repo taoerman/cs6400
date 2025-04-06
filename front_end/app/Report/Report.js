@@ -4,13 +4,36 @@ import { useView } from '@/contexts/ViewContext';
 
 
 export const Report = () => {
-  const [page, setPage] = React.useState(1)
+  const [page, setPage] = React.useState(1);
+  const [animalControlReport, setAnimalControlReport] = React.useState([]);
   const [expenseAnalysis, setExpenseAnalysis] = React.useState([]);
   const { setCurrentView, currentView } = useView();
   const handleClick = (e, num) => {
     e.preventDefault()
     setCurrentView(num)
   }
+
+  useEffect(() => {
+    async function loadAnimalControlReport() {
+      const res = await fetch('http://127.0.0.1:8000/report/animal_control_report/');
+      const result = await res.json();
+      const map = result.report.map(row => {
+        return {
+          month: row.month,
+          data: [
+            row.surrendered_by_animal_control,
+            row.adopted_60plus_days,
+            row.total_expenses,
+          ],
+          m: row.month.split('-')[1],
+          y: row.month.split('-')[0],
+        };
+      });
+      setAnimalControlReport(map);
+    }
+    loadAnimalControlReport();
+
+  }, []);
 
   useEffect(() => {
     async function loadExpenseAnalysis() {
@@ -54,15 +77,7 @@ export const Report = () => {
                 </tr>
               </thead>
               <tbody>
-                {[
-                  { month: "March 2024", data: [12, 8, "$4,520"], m: 3, y: 2024 },
-                  { month: "February 2024", data: [15, 10, "$5,850"], m: 2, y: 2024 },
-                  { month: "January 2024", data: [18, 12, "$6,720"], m: 1, y: 2024 },
-                  { month: "December 2023", data: [14, 9, "$4,980"], m: 12, y: 2023 },
-                  { month: "November 2023", data: [16, 11, "$5,340"], m: 11, y: 2023 },
-                  { month: "October 2023", data: [13, 7, "$3,890"], m: 10, y: 2023 },
-                  { month: "September 2023", data: [17, 13, "$7,150"], m: 9, y: 2023 },
-                ].map(({ month, data, m, y }) => (
+                {animalControlReport.map(({ month, data, m, y }) => (
                   <tr key={month}>
                     <td>
                       <a
@@ -93,7 +108,7 @@ export const Report = () => {
                         href={`drill-down.html?month=${m}&year=${y}&category=expenses`}
                         className={styles["data-link"]}
                       >
-                        {data[2]}
+                        {'$ ' + data[2]}
                       </a>
                     </td>
                   </tr>
@@ -102,32 +117,12 @@ export const Report = () => {
               <tfoot>
                 <tr>
                   <td>Total</td>
-                  <td>105</td>
-                  <td>70</td>
-                  <td>$38,450</td>
+                  <td>{animalControlReport.reduce((acc, row) => acc + parseInt(row.data[0]), 0)}</td>
+                  <td>{animalControlReport.reduce((acc, row) => acc + parseInt(row.data[1]), 0)}</td>
+                  <td>{'$ ' + animalControlReport.reduce((acc, row) => acc + Number(row.data[2]), 0)}</td>
                 </tr>
               </tfoot>
             </table>
-          </div>
-
-          <div className={styles["report-summary"]}>
-            <div className={styles["summary-card"]}>
-              <h3>Monthly Average</h3>
-              <div className={styles["summary-stats"]}>
-                <div className={styles["stat-item"]}>
-                  <label>Dogs from AC:</label>
-                  <span>15</span>
-                </div>
-                <div className={styles["stat-item"]}>
-                  <label>Adoptions (60+ days):</label>
-                  <span>10</span>
-                </div>
-                <div className={styles["stat-item"]}>
-                  <label>Expenses per Month:</label>
-                  <span>$5,493</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
