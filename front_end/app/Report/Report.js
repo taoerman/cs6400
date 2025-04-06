@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
+import { getDollarAmountFormat } from "./../utils";
 
 
 export const Report = () => {
@@ -28,7 +29,7 @@ export const Report = () => {
 
   }, []);
 
-  console.log(monthlyAdoptionReport);
+
 
   useEffect(() => {
     async function loadAnimalControlReport() {
@@ -124,7 +125,7 @@ export const Report = () => {
                         onClick={(e) => handleClick(e, 7, 'expenseView', m, y)}
                         className={styles["data-link"]}
                       >
-                        {'$ ' + data[2]}
+                        {getDollarAmountFormat(data[2])}
                       </a>
                     </td>
                   </tr>
@@ -135,7 +136,7 @@ export const Report = () => {
                   <td>Total</td>
                   <td>{animalControlReport.reduce((acc, row) => acc + parseInt(row.data[0]), 0)}</td>
                   <td>{animalControlReport.reduce((acc, row) => acc + parseInt(row.data[1]), 0)}</td>
-                  <td>{'$ ' + animalControlReport.reduce((acc, row) => acc + Number(row.data[2]), 0)}</td>
+                  <td>{getDollarAmountFormat(animalControlReport.reduce((acc, row) => acc + Number(row.data[2]), 0))}</td>
                 </tr>
               </tfoot>
             </table>
@@ -156,7 +157,7 @@ export const Report = () => {
                   <th>Dogs Adopted</th>
                   <th>Total Expenses</th>
                   <th>Adoption Fees</th>
-                  <th>Net Profit*</th>
+                  <th>Net Profit</th>
                 </tr>
               </thead>
               <tbody>
@@ -191,9 +192,9 @@ export const Report = () => {
                           <td>{item.breed}</td>
                           <td>{item.totalSurrendered}</td>
                           <td>{item.totalAdopted}</td>
-                          <td>{item.totalExpenses.toFixed(2)}</td>
-                          <td>{item.totalAdoptionFees.toFixed(2)}</td>
-                          <td>{item.netProfit.toFixed(2)}</td>
+                          <td>{getDollarAmountFormat(item.totalExpenses)}</td>
+                          <td>{getDollarAmountFormat(item.totalAdoptionFees)}</td>
+                          <td>{getDollarAmountFormat(item.netProfit)}</td>
                         </tr>
                       ))}
                       <tr style={{ backgroundColor: '#fffacc', fontWeight: 'bold' }}>
@@ -201,9 +202,9 @@ export const Report = () => {
                         <td>--</td>
                         <td>{summary.totalSurrendered}</td>
                         <td>{summary.totalAdopted}</td>
-                        <td>{summary.totalExpenses.toFixed(2)}</td>
-                        <td>{summary.totalAdoptionFees.toFixed(2)}</td>
-                        <td>{summary.netProfit.toFixed(2)}</td>
+                        <td>{getDollarAmountFormat(summary.totalExpenses)}</td>
+                        <td>{getDollarAmountFormat(summary.totalAdoptionFees)}</td>
+                        <td>{getDollarAmountFormat(summary.netProfit)}</td>
                       </tr>
                     </React.Fragment>
                   );
@@ -234,7 +235,7 @@ export const Report = () => {
                   return (<tr key={index}>
                     <td>{row.expenseVendor}</td>
                     <td></td>
-                    <td>{'$ ' + row.totalSpent}</td>
+                    <td>{getDollarAmountFormat(row.totalSpent)}</td>
                   </tr>);
                 })}
 
@@ -243,8 +244,8 @@ export const Report = () => {
                 <tr>
                   <td>Total All Vendors</td>
                   <td></td>
-                  <td>{'$ ' + expenseAnalysis.reduce((acc, row) =>
-                    acc + row.totalSpent, 0)}</td>
+                  <td>{getDollarAmountFormat(expenseAnalysis.reduce((acc, row) =>
+                    acc + row.totalSpent, 0))}</td>
                   <td></td>
                 </tr>
               </tfoot>

@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import Modal from "../Common/Modal";
 import styles from "@/app/styles.module.css"
 import { useView } from "@/contexts/ViewContext";
+import { getDollarAmountFormat } from "./../utils";
+
+
 export const AddAdoption = () => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -229,7 +232,7 @@ export const AddAdoption = () => {
                   <div className={styles["form-grid"]}>
                     <div className={styles["form-group"]}>
                       <label>Adoption Fee</label>
-                      <div>{'$ ' + adoptionFee}</div>
+                      <div>{getDollarAmountFormat(adoptionFee)}</div>
                     </div>
                   </div>
                 </div>

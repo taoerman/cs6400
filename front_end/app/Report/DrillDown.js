@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
+import { getDollarAmountFormat } from "./../utils";
 
 export const DrillDown = ({ view }) => {
   const monthNames = ["January", "February", "March", "April", "May", "June",
@@ -148,7 +149,7 @@ export const DrillDown = ({ view }) => {
                     <td>{row.microchipID}</td>
                     <td>{row.surrenderDate}</td>
                     <td>{row.surrenderedByAnimalControl ? "Yes" : "No"}</td>
-                    <td>{'$ ' + row.totalExpenses}</td>
+                    <td>{getDollarAmountFormat(row.totalExpenses)}</td>
                   </tr>
                 )
               })}
