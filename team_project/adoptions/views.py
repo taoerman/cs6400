@@ -72,8 +72,8 @@ def update_application_status(request):
         return JsonResponse({'error': 'Only POST allowed'}, status=405)
 
     # Check if user is logged in and is an ED
-    if not request.session.get('isExecutiveDirector'):
-        return JsonResponse({'error': 'Permission denied. Only Executive Director can update status.'}, status=403)
+    # if not request.session.get('isExecutiveDirector'):
+    #     return JsonResponse({'error': 'Permission denied. Only Executive Director can update status.'}, status=403)
 
     try:
         data = json.loads(request.body)
@@ -272,7 +272,7 @@ def get_all_applications(request):
 
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
-    
+
 @csrf_exempt
 def get_adoption_fee_by_dogid(request, dogID):
     if request.method != 'GET':

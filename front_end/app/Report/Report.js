@@ -6,6 +6,7 @@ import { useView } from '@/contexts/ViewContext';
 export const Report = () => {
   const [page, setPage] = useState(1);
   const [animalControlReport, setAnimalControlReport] = useState([]);
+  const [monthlyAdoptionReport, setMonthlyAdoptionReport] = useState([]);
   const [expenseAnalysis, setExpenseAnalysis] = useState([]);
   const { setCurrentView, setCurrentReport, setReportMonth, setReportYear } = useView();
   const handleClick = (e, num, report, month, year) => {
@@ -15,6 +16,19 @@ export const Report = () => {
     setReportYear(year);
     setCurrentView(num);
   }
+
+  useEffect(() => {
+    async function loadmonthlyAdoptionReport() {
+      const res = await fetch('http://127.0.0.1:8000/report/monthly_adoption_report/');
+      const result = await res.json();
+
+      setMonthlyAdoptionReport(result.report);
+    }
+    loadmonthlyAdoptionReport();
+
+  }, []);
+
+  console.log(monthlyAdoptionReport);
 
   useEffect(() => {
     async function loadAnimalControlReport() {
@@ -147,76 +161,54 @@ export const Report = () => {
               </thead>
               <tbody>
                 {/* Render data manually or map through a data array similarly to above */}
-                <tr>
-                  <td rowSpan={3}>March 2023</td>
-                  <td>Beagle, Dachshund</td>
-                  <td>2</td>
-                  <td>1</td>
-                  <td>$850</td>
-                  <td>$250</td>
-                  <td className={styles["negative"]}>-$600</td>
-                </tr>
-                <tr>
-                  <td>German Shepherd</td>
-                  <td>3</td>
-                  <td>2</td>
-                  <td>$1,200</td>
-                  <td>$500</td>
-                  <td className={styles["negative"]}>-$700</td>
-                </tr>
-                <tr>
-                  <td>Labrador Retriever, Pit Bull</td>
-                  <td>2</td>
-                  <td>2</td>
-                  <td>$950</td>
-                  <td>$500</td>
-                  <td className={styles["negative"]}>-$450</td>
-                </tr>
-                <tr className={styles["month-total"]}>
-                  <td colSpan={2}>March 2023 Total</td>
-                  <td>7</td>
-                  <td>5</td>
-                  <td>$3,000</td>
-                  <td>$1,250</td>
-                  <td className={styles["negative"]}>-$1,750</td>
-                </tr>
-                {/* April 2023 data */}
-                <tr>
-                  <td rowSpan={2}>April 2023</td>
-                  <td>Border Collie</td>
-                  <td>2</td>
-                  <td>1</td>
-                  <td>$750</td>
-                  <td>$250</td>
-                  <td className={styles["negative"]}>-$500</td>
-                </tr>
-                <tr>
-                  <td>Husky, Shepherd</td>
-                  <td>1</td>
-                  <td>2</td>
-                  <td>$900</td>
-                  <td>$500</td>
-                  <td className={styles["negative"]}>-$400</td>
-                </tr>
-                <tr className={styles["month-total"]}>
-                  <td colSpan={2}>April 2023 Total</td>
-                  <td>3</td>
-                  <td>3</td>
-                  <td>$1,650</td>
-                  <td>$750</td>
-                  <td className={styles["negative"]}>-$900</td>
-                </tr>
+                {Object.entries(monthlyAdoptionReport).map(([month, breeds]) => {
+                  const sortedBreeds = [...breeds].sort((a, b) =>
+                    a.breed.localeCompare(b.breed)
+                  );
+
+                  const summary = sortedBreeds.reduce((acc, curr) => {
+                    acc.totalSurrendered += curr.totalSurrendered;
+                    acc.totalAdopted += curr.totalAdopted;
+                    acc.totalAdoptionFees += curr.totalAdoptionFees;
+                    acc.totalExpenses += curr.totalExpenses;
+                    acc.netProfit += curr.netProfit;
+                    return acc;
+                  },
+                    {
+                      totalSurrendered: 0,
+                      totalAdopted: 0,
+                      totalAdoptionFees: 0,
+                      totalExpenses: 0,
+                      netProfit: 0,
+                    }
+                  );
+
+                  return (
+                    <React.Fragment key={month}>
+                      {sortedBreeds.map((item, index) => (
+                        <tr key={index}>
+                          <td>{index === 0 ? month : ""}</td>
+                          <td>{item.breed}</td>
+                          <td>{item.totalSurrendered}</td>
+                          <td>{item.totalAdopted}</td>
+                          <td>{item.totalExpenses.toFixed(2)}</td>
+                          <td>{item.totalAdoptionFees.toFixed(2)}</td>
+                          <td>{item.netProfit.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                      <tr style={{ backgroundColor: '#fffacc', fontWeight: 'bold' }}>
+                        <td>{month} Summary</td>
+                        <td>--</td>
+                        <td>{summary.totalSurrendered}</td>
+                        <td>{summary.totalAdopted}</td>
+                        <td>{summary.totalExpenses.toFixed(2)}</td>
+                        <td>{summary.totalAdoptionFees.toFixed(2)}</td>
+                        <td>{summary.netProfit.toFixed(2)}</td>
+                      </tr>
+                    </React.Fragment>
+                  );
+                })}
               </tbody>
-              <tfoot>
-                <tr>
-                  <td colSpan={2}>12-Month Total</td>
-                  <td>85</td>
-                  <td>76</td>
-                  <td>$42,500</td>
-                  <td>$19,000</td>
-                  <td className={styles["negative"]}>-$23,500</td>
-                </tr>
-              </tfoot>
             </table>
           </div>
           <div className={styles["report-note"]}>

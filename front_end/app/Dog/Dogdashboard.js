@@ -33,7 +33,7 @@ export const Dogdashboard = () => {
     setCurrentView(num)
   }
   const checkAdoptable = (dog) => {
-    if (dog.altered && dog.microchipID)
+    if (!dog.is_adopted && dog.altered && dog.microchipID != null)
       return 'Yes'
     else
       return 'No'
@@ -41,7 +41,7 @@ export const Dogdashboard = () => {
 
   const filteredData = data.filter(dog => {
     if (filter === 'all') return true;
-    const isAdoptable = dog.altered && dog.microchipID.length != 0;
+    const isAdoptable = !dog.is_adopted && dog.altered && dog.microchipID != null;
     return filter === 'adoptable' ? isAdoptable : !isAdoptable;
   });
 
@@ -50,7 +50,7 @@ export const Dogdashboard = () => {
       <div className={styles["dashboard-header"]}>
         <h1 className={styles["page-title"]}>Dog Dashboard</h1>
         <div>
-        <button onClick={() => handleClick(5)} className={styles["primary-btn"]}>Add Adoption Application</button>
+          <button onClick={() => handleClick(5)} className={styles["primary-btn"]}>Add Adoption Application</button>
           <span >Dog Capacity: {capacity.remainingSpace}  </span>
           {capacity?.remainingSpace > 0 && <div className={styles["dashboard-actions"]}>
             <button onClick={() => handleClick(2)} className={styles["primary-btn"]}>Add New Dog</button>
