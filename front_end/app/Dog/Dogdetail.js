@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
-import {DropdownSelect} from '@/app/Common/Dropdown'
+import { DropdownSelect } from '@/app/Common/Dropdown'
+import { getDollarAmountFormat } from "./../utils";
+
+
 export const DogDetail = () => {
     const { setCurrentView, currentView, dogId, setDogId } = useView();
     const [data, setData] = useState();
@@ -16,7 +19,7 @@ export const DogDetail = () => {
         const res = await fetch('http://127.0.0.1:8000/dogs/get_dog/' + dogId);
         const result = await res.json();
         setData(result);
-        
+
         const exp = await fetch('http://127.0.0.1:8000/expenses/' + dogId);
         const expdata = await exp.json();
         setExpensesData(expdata);
@@ -24,7 +27,7 @@ export const DogDetail = () => {
             sex: result.sex,
             microchipID: result.microchipID,
             altered: result.altered,
-            breeds:result.breeds
+            breeds: result.breeds
         };
         setEditData(tempData);
         loadData();
@@ -71,12 +74,12 @@ export const DogDetail = () => {
         const body = JSON.stringify(dataWithoutBreed)
         const body_breed = JSON.stringify(breeds)
         const [res1, res2] = await Promise.all([fetch('http://127.0.0.1:8000/dogs/edit_dog/' + dogId + '/', { method: 'PUT', body: body }),
-            fetch('http://127.0.0.1:8000/dogs/save_breed/', {method:'POST', body: body_breed})
+        fetch('http://127.0.0.1:8000/dogs/save_breed/', { method: 'POST', body: body_breed })
         ])
         //if success, reload dog data
         if (res1.ok && res2.ok) {
             loadData()
-        }else{
+        } else {
             throw new Error("Save dog failed!");
         }
     }
@@ -95,9 +98,9 @@ export const DogDetail = () => {
         }
     }
     const handleBreedChange = (value) => {
-        if(value.includes('Unknown'))
+        if (value.includes('Unknown'))
             value = 'Unknown'
-        else if(value.includes('Mixed'))
+        else if (value.includes('Mixed'))
             value = 'Mixed'
         console.log(value)
         setEditData((prevData) => ({
@@ -149,7 +152,7 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Breed</label>
-                            {editing ? <DropdownSelect selected={editData.breeds} onChange={handleBreedChange} options = {breedType} multiselect = {multiselect} />: <span>{data != null && data.breeds ? data.breeds.join(', ') : ''}</span>}
+                            {editing ? <DropdownSelect selected={editData.breeds} onChange={handleBreedChange} options={breedType} multiselect={multiselect} /> : <span>{data != null && data.breeds ? data.breeds.join(', ') : ''}</span>}
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Sex</label>
@@ -219,7 +222,7 @@ export const DogDetail = () => {
                                             <td>{expense.expenseDate}</td>
                                             <td>{expense.expenseCategory}</td>
                                             <td>{expense.expenseVendor}</td>
-                                            <td>${expense.expenseAmount.toFixed(2)}</td>
+                                            <td>{getDollarAmountFormat(expense.expenseAmount)}</td>
                                         </tr>
                                     )
                                     )) :
@@ -231,14 +234,14 @@ export const DogDetail = () => {
                                     <tr key={`total-${category}`}>
                                         <td colSpan="2"></td>
                                         <td><strong>Total {categoryLabels[category] || category}:</strong></td>
-                                        <td><strong>${total.toFixed(2)}</strong></td>
+                                        <td><strong>{getDollarAmountFormat(total)}</strong></td>
                                     </tr>
                                 ))}
 
                                 <tr>
                                     <td colSpan="2"></td>
                                     <td><strong>Grand Total:</strong></td>
-                                    <td><strong>${grandTotal.toFixed(2)}</strong></td>
+                                    <td><strong>{getDollarAmountFormat(grandTotal)}</strong></td>
                                 </tr>
                             </tfoot>
                         </table>
