@@ -14,6 +14,8 @@ export const Router = () => {
           <Route title="Report" num={6} />
           <Route title="DrillDown" num={7} />
           <Route title="Volunteer" num={8} />
+          <Route title="DEBUG" num={10} />
+          <Route title="DEBUG2" num={3} />
         </>
       ) : (<>
         <Route title="Dog Dashboard" num={1} />
