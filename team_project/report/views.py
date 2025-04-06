@@ -1,7 +1,7 @@
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
-from datetime import datetime
+from datetime import datetime, timezone
 from dateutil.relativedelta import relativedelta
 import calendar
 
@@ -11,7 +11,7 @@ def animal_control_report(request):
         return JsonResponse({'error': 'Only GET allowed'}, status=405)
 
     try:
-        today = datetime.today()
+        today = datetime.now(timezone.utc).date()
         first_day_current_month = today.replace(day=1)
         start_month = first_day_current_month - relativedelta(months=6)
 
@@ -188,36 +188,102 @@ def monthly_adoption_report(request):
     #     return JsonResponse({"error": "Unauthorized"}, status=403)
 
     try:
+        today = datetime.now(timezone.utc).date()
+        start_month = (today.replace(day=1) - relativedelta(months=12))
+
+
+        report = []
+
         with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT
-                    YEAR(a.adoptionDate) AS year,
-                    MONTH(a.adoptionDate) AS month,
-                    COUNT(DISTINCT a.dogID) AS totalAdopted,
-                    COALESCE(SUM(e.expenseAmount), 0) AS totalExpenses
-                FROM Adoption a
-                JOIN Dog d ON a.dogID = d.id
-                LEFT JOIN Expense e ON d.id = e.dogID
-                WHERE a.adoptionDate >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-                GROUP BY YEAR(a.adoptionDate), MONTH(a.adoptionDate)
-                ORDER BY YEAR(a.adoptionDate), MONTH(a.adoptionDate)
-            """)
-            rows = cursor.fetchall()
+            for i in range(12):
+                month_start = start_month + relativedelta(months=i)
+                year = month_start.year
+                month = month_start.month
+                month_end_day = calendar.monthrange(year, month)[1]
+                month_end = datetime(year, month, month_end_day).date()
 
-            result = []
-            for row in rows:
-                year, month_num = row[0], row[1]
-                result.append({
-                    "month": f"{calendar.month_name[month_num]} {year}",
-                    "totalAdopted": row[2],
-                    "totalExpenses": float(row[3]),
-                })
+                # Get distinct breeds for dogs surrendered or adopted this month
+                cursor.execute("""
+                    SELECT DISTINCT b.breedName
+                    FROM Breeds b
+                    JOIN Dog d ON b.dogID = d.id
+                    LEFT JOIN Adoption a ON d.id = a.dogID
+                    WHERE (d.surrenderDate BETWEEN %s AND %s OR a.adoptionDate BETWEEN %s AND %s)
+                """, [month_start, month_end, month_start, month_end])
+                breed_list = sorted([row[0] for row in cursor.fetchall()])
 
-        return JsonResponse({"report": result}, status=200)
+                for breed in breed_list:
+                    # Total surrendered
+                    cursor.execute("""
+                        SELECT COUNT(*) FROM Dog d
+                        JOIN Breeds b ON d.id = b.dogID
+                        WHERE b.breedName = %s AND d.surrenderDate BETWEEN %s AND %s
+                    """, [breed, month_start, month_end])
+                    total_surrendered = cursor.fetchone()[0]
+
+                    # Total adopted
+                    cursor.execute("""
+                        SELECT d.id, d.name, d.surrenderedByAnimalControl
+                        FROM Adoption a
+                        JOIN Dog d ON a.dogID = d.id
+                        JOIN Breeds b ON d.id = b.dogID
+                        WHERE b.breedName = %s AND a.adoptionDate BETWEEN %s AND %s
+                    """, [breed, month_start, month_end])
+                    adopted_dogs = cursor.fetchall()
+                    total_adopted = len(adopted_dogs)
+
+                    total_fees = 0.0
+                    for dog in adopted_dogs:
+                        dog_id, name, is_ac = dog
+
+                        # Total expenses for dog
+                        cursor.execute("SELECT SUM(expenseAmount) FROM Expense WHERE dogID = %s", [dog_id])
+                        expense_result = cursor.fetchone()[0]
+                        total_exp = float(expense_result) if expense_result else 0.0
+
+                        if name.lower() == "sideways":
+                            cursor.execute("SELECT breedName FROM Breeds WHERE dogID = %s", [dog_id])
+                            breed_names = [r[0].lower() for r in cursor.fetchall()]
+                            if any("terrier" in b for b in breed_names):
+                                fee = 0.0
+                            else:
+                                fee = round(total_exp * (0.1 if is_ac else 1.25), 2)
+                        elif is_ac:
+                            fee = round(total_exp * 0.10, 2)
+                        else:
+                            fee = round(total_exp * 1.25, 2)
+
+                        total_fees += fee
+
+                    # Total expenses for adopted dogs excluding animal control
+                    cursor.execute("""
+                        SELECT SUM(e.expenseAmount)
+                        FROM Expense e
+                        JOIN Dog d ON e.dogID = d.id
+                        JOIN Adoption a ON d.id = a.dogID
+                        JOIN Breeds b ON d.id = b.dogID
+                        WHERE b.breedName = %s
+                          AND a.adoptionDate BETWEEN %s AND %s
+                          AND d.surrenderedByAnimalControl = 0
+                    """, [breed, month_start, month_end])
+                    total_expenses = float(cursor.fetchone()[0] or 0.0)
+
+                    report.append({
+                        "month": f"{calendar.month_name[month]} {year}",
+                        "breed": breed,
+                        "totalSurrendered": total_surrendered,
+                        "totalAdopted": total_adopted,
+                        "totalAdoptionFees": round(total_fees, 2),
+                        "totalExpenses": total_expenses,
+                        "netProfit": round(total_fees - total_expenses, 2)
+                    })
+
+        # Sort by month and breed
+        sorted_report = sorted(report, key=lambda r: (datetime.strptime(r['month'], "%B %Y"), r['breed']))
+        return JsonResponse({"report": sorted_report}, status=200)
 
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
-
 
 
 @csrf_exempt
