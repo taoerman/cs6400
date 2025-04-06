@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react"
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
+import { getDataFromBackEnd } from "./../utils";
+
 export const Dogdashboard = () => {
   const [data, setData] = useState([]);
   const [capacity, setCapacity] = useState({
@@ -10,7 +12,7 @@ export const Dogdashboard = () => {
   const maxDogNum = process.env.NEXT_PUBLIC_MAX_SHELTER_CAPACITY
   useEffect(() => {
     async function loadData() {
-      const res = await fetch('http://127.0.0.1:8000/dogs/get_all_dogs/');
+      const res = await getDataFromBackEnd('/dogs/get_all_dogs/');
       const result = await res.json();
       const sortedRes = [...result].sort((a, b) =>
         new Date(a.surrenderDate) - new Date(b.surrenderDate)
@@ -21,7 +23,7 @@ export const Dogdashboard = () => {
   }, []);
   useEffect(() => {
     async function loadData() {
-      const res = await fetch('http://127.0.0.1:8000/dogs/shelter_capacity/');
+      const res = await getDataFromBackEnd('/dogs/shelter_capacity/');
       const result = await res.json();
       setCapacity(result);
     }

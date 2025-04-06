@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
 import { DropdownSelect } from '@/app/Common/Dropdown'
-import { getDollarAmountFormat } from "./../utils";
+import { getDataFromBackEnd, postDataToBackEnd, getDollarAmountFormat } from "./../utils";
 
 
 export const DogDetail = () => {
@@ -16,11 +16,11 @@ export const DogDetail = () => {
     const [breedType, setBreedType] = useState([])
     const [multiselect, setMultiselect] = useState(true)
     const loadData = async () => {
-        const res = await fetch('http://127.0.0.1:8000/dogs/get_dog/' + dogId);
+        const res = await getDataFromBackEnd('dogs/get_dog/' + dogId);
         const result = await res.json();
         setData(result);
 
-        const exp = await fetch('http://127.0.0.1:8000/expenses/' + dogId);
+        const exp = await getDataFromBackEnd('expenses/' + dogId);
         const expdata = await exp.json();
         setExpensesData(expdata);
         const tempData = {
@@ -34,7 +34,7 @@ export const DogDetail = () => {
     };
     useEffect(() => {
         //fetch breed type
-        fetch('http://127.0.0.1:8000/dogs/get_breeds/')
+        getDataFromBackEnd('dogs/get_breeds/')
             .then((data) => data.json())
             .then((data) => {
                 console.log('data', data);
@@ -73,8 +73,9 @@ export const DogDetail = () => {
         const { breeds, ...dataWithoutBreed } = editData;
         const body = JSON.stringify(dataWithoutBreed)
         const body_breed = JSON.stringify(breeds)
-        const [res1, res2] = await Promise.all([fetch('http://127.0.0.1:8000/dogs/edit_dog/' + dogId + '/', { method: 'PUT', body: body }),
-        fetch('http://127.0.0.1:8000/dogs/save_breed/', { method: 'POST', body: body_breed })
+        const [res1, res2] = await Promise.all([
+            postDataToBackEnd('dogs/edit_dog/' + dogId + '/', body),
+            postDataToBackEnd('dogs/save_breed/', body_breed)
         ])
         //if success, reload dog data
         if (res1.ok && res2.ok) {

@@ -119,14 +119,13 @@ method: GET
 
 response example:
 [{
-
-        "userEmail": "test@example.com",
-        "firstName": "Test",
-        "lastName": "User",
-        "birthDate": "1990-01-01",
-        "phoneNumber": "1234567890",
-        "isExecutiveDirector": 0,
-        "password": "6e0daa0a792dcaef24738984267b05c5153663f16fa31a96325ab2fc1ca713b8"
+    "userEmail": "test@example.com",
+    "firstName": "Test",
+    "lastName": "User",
+    "birthDate": "1990-01-01",
+    "phoneNumber": "1234567890",
+    "isExecutiveDirector": 0,
+    "password": "6e0daa0a792dcaef24738984267b05c5153663f16fa31a96325ab2fc1ca713b8"
 }]
 
 ### register_user(request)
@@ -135,7 +134,6 @@ url: http://127.0.0.1:8080/accounts/register/
 method: POST
 
 request example:{
-
     "userEmail": "volunteer1@example.com",
     "firstName": "Jane",
     "lastName": "Doe",
@@ -149,15 +147,14 @@ response example: {
   "message": "User registered successfully!"
 }
 
-### login_user(request)
+### login(request)
 url: http://127.0.0.1:8080/accounts/login/
 
 method: POST
 
 request example: {
-
-      "userEmail": "volunteer1@example.com",
-      "password": "securePass123"
+    "userEmail": "volunteer1@example.com",
+    "password": "securePass123"
 }
 
 response example: {
@@ -169,16 +166,13 @@ url: http://127.0.0.1:8080/accounts/volunteers/
 
 method: GET
 response example:{
-
     "volunteers": [
-
         {
             "userEmail": "test@example.com",
             "firstName": "Test",
             "lastName": "User",
             "phoneNumber": "1234567890"
         },
-
         {
             "userEmail": "volunteer1@example.com",
             "firstName": "Jane",
@@ -195,7 +189,6 @@ method: GET
 
 response example: {
     "volunteers": [
-
         {
             "firstName": "Test",
             "lastName": "User",
@@ -214,10 +207,9 @@ url: http://127.0.0.1:8080/dogs/shelter_capacity/
 method: GET
 
 response example: {
-
-        "currentInShelter": 5,
-        "maxCapacity": 15,
-        "remain_space": 10
+    "currentInShelter": 5,
+    "maxCapacity": 15,
+    "remain_space": 10
 }
 ### get_all_dogs(request)
 url: http://127.0.0.1:8080/dogs/get_all_dogs/
@@ -248,17 +240,16 @@ url: http://127.0.0.1:8080/dogs/add_dog/
 method: POST
 
 request example: {
-
-        "name": "Buddy",
-        "breed": ["Golden Retriever"],
-        "sex": "Male",
-        "altered": true,
-        "ageForMonths": 18,
-        "surrenderedByAnimalControl": false,
-        "surrenderPhone": null,
-        "microchipID": "123456789",
-        "microchipVendor": "PetSafe",
-        "description": "Friendly and energetic"
+    "name": "Buddy",
+    "breed": ["Golden Retriever"],
+    "sex": "Male",
+    "altered": true,
+    "ageForMonths": 18,
+    "surrenderedByAnimalControl": false,
+    "surrenderPhone": null,
+    "microchipID": "123456789",
+    "microchipVendor": "PetSafe",
+    "description": "Friendly and energetic"
 }
 
 ### get_dog_by_id(request, dog_id)
@@ -267,7 +258,6 @@ url:  http://127.0.0.1:8080/dogs/get_dog/1/
 method: GET
 
 response example: {
-
     "id": 1,
     "name": "Fido",
     "breed": "\"Labrador\"",
@@ -288,10 +278,9 @@ url:  http://127.0.0.1:8080/dogs/edit_dog/1/
 method: PUT
 
 request example: {
-
-      "sex": "Male",
-      "breed": ["Golden Retriever"],
-      "microchipID": "987654321"
+    "sex": "Male",
+    "breed": ["Golden Retriever"],
+    "microchipID": "987654321"
 }
 
 ## adoptions
@@ -301,18 +290,17 @@ url: http://127.0.0.1:8080/adoptions/add_adoption_application/
 method: POST
 
 request example: {
-
-      "adopterEmail": "jane.doe@example.com",
-      "firstName": "Jane",
-      "lastName": "Doe",
-      "street": "123 Oak St",
-      "city": "Atlanta",
-      "state": "GA",
-      "zipCode": "30332",
-      "phoneNumber": "555-222-1234",
-      "householdSize": 3,
-      "applicationDate": "2025-03-27",
-      "dogID": 5
+    "adopterEmail": "jane.doe@example.com",
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "street": "123 Oak St",
+    "city": "Atlanta",
+    "state": "GA",
+    "zipCode": "30332",
+    "phoneNumber": "555-222-1234",
+    "householdSize": 3,
+    "applicationDate": "2025-03-27",
+    "dogID": 5
 }
 
 ### review_pending_applications
@@ -345,9 +333,8 @@ url: http://127.0.0.1:8080/adoptions/rupdate_application_status/
 method: POST
 
 request example: {
-
-      "applicationID": 1,
-      "applicationStatus": "approved"
+    "applicationID": 1,
+    "applicationStatus": "approved"
 }
 
 ### finalize_adoption
@@ -356,13 +343,11 @@ url:  http://127.0.0.1:8080/adoptions/finalize_adoption/
 method: POST
 
 request example: {
-
-      "dogID": 5,
-      "adopterID": 1
+    "dogID": 5,
+    "adopterID": 1
 }
 
 response example:{
-
     "message": "Adoption finalized successfully",
     "dogID": 5,
     "adopterID": 1,
@@ -409,12 +394,11 @@ url:  http://127.0.0.1:8080/expenses/add_expense/
 method: POST
 
 request example: {
-
-      "dogID": 1,
-      "expenseDate": "2025-04-03",
-      "expenseVendor": "PetSmart",
-      "expenseCategory": "medical",
-      "expenseAmount": 89.99
+    "dogID": 1,
+    "expenseDate": "2025-04-03",
+    "expenseVendor": "PetSmart",
+    "expenseCategory": "medical",
+    "expenseAmount": 89.99
 }
 
 ## report

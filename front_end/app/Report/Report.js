@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
-import { getDollarAmountFormat } from "./../utils";
+import { getDataFromBackEnd, getDollarAmountFormat } from "./../utils";
 
 
 export const Report = () => {
@@ -20,7 +20,7 @@ export const Report = () => {
 
   useEffect(() => {
     async function loadmonthlyAdoptionReport() {
-      const res = await fetch('http://127.0.0.1:8000/report/monthly_adoption_report/');
+      const res = await getDataFromBackEnd('report/monthly_adoption_report/');
       const result = await res.json();
 
       setMonthlyAdoptionReport(result.report);
@@ -33,7 +33,7 @@ export const Report = () => {
 
   useEffect(() => {
     async function loadAnimalControlReport() {
-      const res = await fetch('http://127.0.0.1:8000/report/animal_control_report/');
+      const res = await getDataFromBackEnd('report/animal_control_report/');
       const result = await res.json();
       const map = result.report.map(row => {
         return {
@@ -55,7 +55,7 @@ export const Report = () => {
 
   useEffect(() => {
     async function loadExpenseAnalysis() {
-      const res = await fetch('http://127.0.0.1:8000/report/expense_analysis/');
+      const res = await getDataFromBackEnd('report/expense_analysis/');
       const result = await res.json();
       setExpenseAnalysis(result.data);
     }

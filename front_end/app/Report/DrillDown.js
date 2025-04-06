@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
-import { getDollarAmountFormat } from "./../utils";
+import { getDollarAmountFormat, getDataFromBackEnd } from "./../utils";
 
 export const DrillDown = ({ view }) => {
   const monthNames = ["January", "February", "March", "April", "May", "June",
@@ -27,11 +27,10 @@ export const DrillDown = ({ view }) => {
 
   useEffect(() => {
     async function loadAnimalControlReport() {
-      const params = new URLSearchParams({
+      const res = await getDataFromBackEnd('report/animal_control_monthly_details/', {
         month: reportMonth,
         year: reportYear,
       });
-      const res = await fetch(`http://127.0.0.1:8000/report/animal_control_monthly_details/?${params}`);
       const result = await res.json();
       setAnimalControlSurrenders(result.animal_control_surrenders ?? []);
       setOldDogs(result.adopted_60_plus_days ?? []);

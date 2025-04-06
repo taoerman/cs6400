@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import React from "react";
 import styles from "@/app/styles.module.css"
+import { getDataFromBackEnd } from "./../utils";
 
 export const Volunteer = () => {
   const [page, setPage] = React.useState(1);
@@ -13,7 +14,7 @@ export const Volunteer = () => {
 
   useEffect(() => {
     async function loadData() {
-      const res = await fetch('http://127.0.0.1:8000/accounts/volunteers');
+      const res = await getDataFromBackEnd('accounts/volunteers');
       const result = await res.json();
       const sortedRes = [...result.volunteers].sort((a, b) => {
         if (a.lastName.toLowerCase() < b.lastName.toLowerCase()) return -1;

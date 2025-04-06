@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Modal from "../Common/Modal";
 import styles from "@/app/styles.module.css"
 import { useView } from "@/contexts/ViewContext";
-import { getDollarAmountFormat } from "./../utils";
+import { getDataFromBackEnd, getDollarAmountFormat, postDataToBackEnd } from "./../utils";
 
 
 export const AddAdoption = () => {
@@ -33,13 +33,13 @@ export const AddAdoption = () => {
     setFinalDate(e.target.value)
   }
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/adoptions/get_adoption_fee_by_dogid/' + dogId)
+    getDataFromBackEnd('adoptions/get_adoption_fee_by_dogid/' + dogId)
       .then((res) => res.json())
       .then((data) => setAdoptionFee(data['adoptionFee']))
   }, [])
   useEffect(() => {
     async function loadData() {
-      const res = await fetch('http://127.0.0.1:8000/adoptions/get_all_applications/');
+      const res = await getDataFromBackEnd('adoptions/get_all_applications/');
       const result = await res.json();
       const data = result.applications
         .filter((item) => item.isApproved == 1);
@@ -70,13 +70,7 @@ export const AddAdoption = () => {
       adoptionDate: finalDate
     }
     try {
-      const response = await fetch('http://127.0.0.1:8000/adoptions/finalize_adoption/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-      });
+      const response = await postDataToBackEnd('adoptions/finalize_adoption/', body);
 
       if (!response.ok) {
         const errorText = await response.text();

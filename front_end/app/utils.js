@@ -1,3 +1,5 @@
+const HOST_URL = 'http://127.0.0.1:8000';
+
 //https://stackoverflow.com/questions/4825683/how-do-i-create-and-read-a-value-from-cookie-with-javascript
 export function getCookie(cname) {
   let name = cname + "=";
@@ -28,4 +30,17 @@ export function getDollarAmountFormat(amount) {
     currency: 'USD',
     minimumFractionDigits: 2,
   }).format(amount);
+}
+
+export async function getDataFromBackEnd(subUrl, searchParams) {
+  const params = new URLSearchParams(searchParams);
+  return await fetch(`${HOST_URL}/${subUrl}?${params}`);
+}
+
+export async function postDataToBackEnd(subUrl, body) {
+  return await fetch(`${HOST_URL}/${subUrl}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
 }

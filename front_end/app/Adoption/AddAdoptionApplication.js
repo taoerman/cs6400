@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
+import { postDataToBackEnd } from "./../utils";
+
 export const Adoption = () => {
   const { setCurrentView, currentView, dogId, setDogId } = useView();
   const handleClick = (num) => {
@@ -41,13 +43,10 @@ export const Adoption = () => {
       applicationDate: new Date().toISOString().split('T')[0]
     };
     try {
-      const response = await fetch('http://127.0.0.1:8000/adoptions/add_adoption_application/', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(formattedData)
-      });
+      const response = await postDataToBackEnd(
+        'adoptions/add_adoption_application/',
+        formattedData
+      );
 
       if (!response.ok) {
         throw new Error("Failed to submit application");

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
+import { getDataFromBackEnd, postDataToBackEnd } from "./../utils";
+
+
 export const Expense = () => {
     const { setCurrentView, currentView, dogId, setDogId } = useView();
     const [categories, setCategories] = useState([]);
@@ -10,7 +13,7 @@ export const Expense = () => {
     }
 
     useEffect(() => {
-        fetch('http://127.0.0.1:8000/expenses/get_all_categories/')
+        getDataFromBackEnd('expenses/get_all_categories/')
             .then(response => response.json())
             .then(data => {
                 setCategories(data.categories || []);
@@ -45,13 +48,7 @@ export const Expense = () => {
             expenseAmount: formData.expenseAmount,
         };
         try {
-            const response = await fetch('http://127.0.0.1:8000/expenses/add_expense/', {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(formattedData)
-            });
+            const response = await postDataToBackEnd('expenses/add_expense/', formattedData);
 
             if (!response.ok) {
                 throw new Error("Failed to add expense");

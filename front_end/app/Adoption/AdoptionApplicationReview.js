@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "@/app/styles.module.css"
+import { getDataFromBackEnd, postDataToBackEnd } from "./../utils";
 
 export const AdoptionApplicationReview = () => {
   const [data, setData] = useState([]);
@@ -32,7 +33,7 @@ export const AdoptionApplicationReview = () => {
   }
   useEffect(() => {
     async function loadData() {
-      const res = await fetch('http://127.0.0.1:8000/adoptions/get_all_applications/');
+      const res = await getDataFromBackEnd('adoptions/get_all_applications/');
       const result = await res.json();
       setData(result.applications);
     }
@@ -45,7 +46,10 @@ export const AdoptionApplicationReview = () => {
       applicationDate: applicationDate,
       applicationStatus: type === 1 ? "approved" : "rejected"
     }
-    const res = await fetch('http://127.0.0.1:8000/adoptions/update_application_status/', { method: 'POST', body: JSON.stringify(body) });
+    const res = await postDataToBackEnd(
+      'adoptions/update_application_status/',
+      body
+    );
     if (res.ok) {
       setData(data.map((item) => {
         if (

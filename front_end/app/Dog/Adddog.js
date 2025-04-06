@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
 import { DropdownSelect } from '@/app/Common/Dropdown'
+import { getDataFromBackEnd, postDataToBackEnd } from "./../utils";
 
 
 export const AddDog = () => {
@@ -10,13 +11,13 @@ export const AddDog = () => {
     const [breedsType, setBreedsType] = useState([]);
     const [multiselect, setMultiselect] = useState(true)
     useEffect(() => {
-        fetch('http://127.0.0.1:8000/dogs/get_vendors/')
+        getDataFromBackEnd('dogs/get_vendors/')
             .then((data) => data.json())
             .then((data) => {
                 console.log('data', data);
                 setVendors(data['vendors']);
             })
-        fetch('http://127.0.0.1:8000/dogs/get_breeds/')
+        getDataFromBackEnd('dogs/get_breeds/')
             .then((data) => data.json())
             .then((data) => {
                 console.log('data', data);
@@ -73,13 +74,7 @@ export const AddDog = () => {
         };
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/dogs/add_dog/', {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(formattedData)
-            });
+            const response = await postDataToBackEnd('dogs/add_dog/', formattedData);
 
             if (!response.ok) {
                 const errorData = await response.json();

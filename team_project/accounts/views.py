@@ -54,7 +54,7 @@ def register_user(request):
 
 TOKEN_STORE = {}
 @csrf_exempt
-def login_user(request):
+def login(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Only POST allowed'}, status=405)
 
@@ -73,9 +73,13 @@ def login_user(request):
             # save userEmail in session, we will use this in login_status api
             token = secrets.token_hex(32)
             is_exec = user[5]
+            first_name = user[1]
+            last_name = user[2]
             TOKEN_STORE[token] = {
                 'user_email': email,
                 'is_exec': is_exec,
+                'first_name': first_name,
+                'last_name': last_name,
                 'expires_at': datetime.now() + timedelta(hours=1)
             }
 
@@ -83,6 +87,8 @@ def login_user(request):
                 'message': 'Login successful',
                 'token': token,
                 'is_exec': is_exec,
+                'first_name': first_name,
+                'last_name': last_name,
                 'expires_in': 3600
             }, status=200)
         else:
