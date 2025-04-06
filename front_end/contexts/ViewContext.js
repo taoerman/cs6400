@@ -8,8 +8,9 @@ export const ViewProvider = ({ children }) => {
   const [currentView, setCurrentView] = useState(1);
   const [dogId, setDogId] = useState(1);
   const [userType, setUserType] = useState(1)
+  const [dogName, setDogName] = useState('')
   return (
-    <ViewContext.Provider value={{ currentView, setCurrentView, dogId, setDogId, userType, setUserType }}>
+    <ViewContext.Provider value={{ currentView, setCurrentView, dogId, setDogId, userType, setUserType, dogName, setDogName }}>
       {children}
     </ViewContext.Provider>
   );
