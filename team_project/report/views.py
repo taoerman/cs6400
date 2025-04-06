@@ -179,7 +179,6 @@ def animal_control_monthly_details(request):
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
 
-
 @csrf_exempt
 def monthly_adoption_report(request):
     if request.method != 'GET':
@@ -188,6 +187,7 @@ def monthly_adoption_report(request):
     try:
         today = datetime.now(timezone.utc).date()
         start_month = (today.replace(day=1) - relativedelta(months=12))
+
         report = {}
 
         with connection.cursor() as cursor:
@@ -195,82 +195,91 @@ def monthly_adoption_report(request):
                 month_start = start_month + relativedelta(months=i)
                 year = month_start.year
                 month = month_start.month
-                month_end = datetime(year, month, calendar.monthrange(year, month)[1]).date()
-                month_label = f"{calendar.month_name[month]} {year}"
-                report[month_label] = []
+                month_end_day = calendar.monthrange(year, month)[1]
+                month_end = datetime(year, month, month_end_day).date()
 
-                # Get breeds involved in surrender or adoption
                 cursor.execute("""
-                    SELECT DISTINCT b.breedName
-                    FROM Breeds b
-                    JOIN Dog d ON b.dogID = d.id
+                    SELECT DISTINCT d.id
+                    FROM Dog d
                     LEFT JOIN Adoption a ON d.id = a.dogID
-                    WHERE (d.surrenderDate BETWEEN %s AND %s OR a.adoptionDate BETWEEN %s AND %s)
+                    WHERE d.surrenderDate BETWEEN %s AND %s
+                       OR a.adoptionDate BETWEEN %s AND %s
                 """, [month_start, month_end, month_start, month_end])
-                breed_list = sorted([row[0] for row in cursor.fetchall()])
+                dog_ids = [row[0] for row in cursor.fetchall()]
 
-                for breed in breed_list:
-                    # Surrender count
-                    cursor.execute("""
-                        SELECT COUNT(*) FROM Dog d
-                        JOIN Breeds b ON d.id = b.dogID
-                        WHERE b.breedName = %s AND d.surrenderDate BETWEEN %s AND %s
-                    """, [breed, month_start, month_end])
-                    total_surrendered = cursor.fetchone()[0]
+                breed_map = {}
 
-                    cursor.execute("""
-                        SELECT d.id, d.name, d.surrenderedByAnimalControl
-                        FROM Adoption a
-                        JOIN Dog d ON d.id = a.dogID
-                        JOIN Breeds b ON d.id = b.dogID
-                        WHERE b.breedName = %s AND a.adoptionDate BETWEEN %s AND %s
-                    """, [breed, month_start, month_end])
-                    adopted_dogs = cursor.fetchall()
+                for dog_id in dog_ids:
+                    cursor.execute("SELECT breedName FROM Breeds WHERE dogID = %s", [dog_id])
+                    breed_names = sorted([r[0] for r in cursor.fetchall()])
+                    breed_key = "/".join(breed_names)
+                    breed_map.setdefault(breed_key, []).append(dog_id)
 
-                    total_adopted = len(set([d[0] for d in adopted_dogs]))
+                month_key = f"{calendar.month_name[month]} {year}"
+                report[month_key] = []
+
+                for breed_key, ids in breed_map.items():
+                    total_surrendered = 0
+                    total_adopted = 0
                     total_fees = 0.0
+                    total_expenses = 0.0
 
-                    for dog_id, name, is_ac in adopted_dogs:
-                        cursor.execute("SELECT SUM(expenseAmount) FROM Expense WHERE dogID = %s", [dog_id])
-                        total_exp = float(cursor.fetchone()[0] or 0.0)
+                    for dog_id in ids:
+                        # Check surrender date
+                        cursor.execute("SELECT surrenderDate, name, surrenderedByAnimalControl FROM Dog WHERE id = %s", [dog_id])
+                        dog_row = cursor.fetchone()
+                        if not dog_row:
+                            continue
+                        surrender_date, name, is_ac = dog_row
+                        if surrender_date and month_start <= surrender_date <= month_end:
+                            total_surrendered += 1
 
-                        # Special fee logic
-                        if name.lower() == "sideways":
-                            cursor.execute("SELECT breedName FROM Breeds WHERE dogID = %s", [dog_id])
-                            breeds = [b[0].lower() for b in cursor.fetchall()]
-                            if any("terrier" in b for b in breeds):
-                                fee = 0.0
-                            else:
-                                fee = round(total_exp * (0.1 if is_ac else 1.25), 2)
-                        else:
-                            fee = round(total_exp * (0.1 if is_ac else 1.25), 2)
+                        # Check adoption date
+                        cursor.execute("SELECT adoptionDate FROM Adoption WHERE dogID = %s", [dog_id])
+                        adoption_row = cursor.fetchone()
+                        if adoption_row:
+                            adoption_date = adoption_row[0]
+                            if month_start <= adoption_date <= month_end:
+                                total_adopted += 1
 
-                        total_fees += fee
+                                # Get expenses
+                                cursor.execute("SELECT SUM(expenseAmount) FROM Expense WHERE dogID = %s", [dog_id])
+                                expense_sum = cursor.fetchone()[0]
+                                expense_sum = float(expense_sum) if expense_sum else 0.0
 
-                    # Expenses (exclude animal control dogs)
-                    cursor.execute("""
-                        SELECT SUM(e.expenseAmount)
-                        FROM Expense e
-                        JOIN Dog d ON d.id = e.dogID
-                        JOIN Adoption a ON d.id = a.dogID
-                        JOIN Breeds b ON d.id = b.dogID
-                        WHERE b.breedName = %s AND a.adoptionDate BETWEEN %s AND %s AND d.surrenderedByAnimalControl = 0
-                    """, [breed, month_start, month_end])
-                    total_expenses = float(cursor.fetchone()[0] or 0.0)
+                                # Calculate fee
+                                if name.lower() == 'sideways':
+                                    cursor.execute("SELECT breedName FROM Breeds WHERE dogID = %s", [dog_id])
+                                    breed_list = [r[0].lower() for r in cursor.fetchall()]
+                                    if any('terrier' in b for b in breed_list):
+                                        fee = 0.0
+                                    else:
+                                        fee = round(expense_sum * (0.1 if is_ac else 1.25), 2)
+                                elif is_ac:
+                                    fee = round(expense_sum * 0.10, 2)
+                                else:
+                                    fee = round(expense_sum * 1.25, 2)
 
-                    report[month_label].append({
-                        "breed": breed,
-                        "totalSurrendered": total_surrendered,
-                        "totalAdopted": total_adopted,
-                        "totalAdoptionFees": round(total_fees, 2),
-                        "totalExpenses": round(total_expenses, 2),
-                        "netProfit": round(total_fees - total_expenses, 2)
-                    })
+                                total_fees += fee
+
+                                if not is_ac:
+                                    total_expenses += expense_sum
+
+                    if total_surrendered or total_adopted:
+                        report[month_key].append({
+                            "breed": breed_key,
+                            "totalSurrendered": total_surrendered,
+                            "totalAdopted": total_adopted,
+                            "totalAdoptionFees": round(total_fees, 2),
+                            "totalExpenses": round(total_expenses, 2),
+                            "netProfit": round(total_fees - total_expenses, 2)
+                        })
 
         return JsonResponse({"report": report}, status=200)
 
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
+
 
 
 @csrf_exempt
