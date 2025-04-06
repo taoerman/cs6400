@@ -30,11 +30,12 @@ export default function Home() {
         throw new Error(errorData.error || 'Login failed');
       }
 
-      const { token, first_name, last_name, is_exec } = await response.json();
+      const { token, first_name, last_name, is_exec, is_adult } = await response.json();
       localStorage.setItem('token', token);
       setUserEmail(email);
       setCookie('userEmail', email);
       setName(first_name + ' ' + last_name);
+      setCookie('isAdult', is_adult);
       if (is_exec) {
         setCookie('loginType', 3)
         setLogin(3)

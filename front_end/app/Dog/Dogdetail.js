@@ -37,7 +37,6 @@ export const DogDetail = () => {
         getDataFromBackEnd('dogs/get_breeds/')
             .then((data) => data.json())
             .then((data) => {
-                console.log('data', data);
                 setBreedType(data['breeds']);
             })
     }, [])
@@ -103,7 +102,6 @@ export const DogDetail = () => {
             value = 'Unknown'
         else if (value.includes('Mixed'))
             value = 'Mixed'
-        console.log(value)
         setEditData((prevData) => ({
             ...prevData,
             breeds: value

@@ -2,3 +2,6 @@
 .report-table tbody tr td.no-birthdays {
   text-align: center !important;
 }
+.detail-link.under18 {
+  background-color:#f5f5f5;color:#666
+}

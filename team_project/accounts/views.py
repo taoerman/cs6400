@@ -3,8 +3,20 @@ import hashlib
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.db import connection
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import secrets
+
+
+def is_over_18(birthday_input):
+    if isinstance(birthday_input, date):
+        birthday = birthday_input
+    else:
+        birthday = datetime.strptime(birthday_input, "%Y-%m-%d").date()
+    today = date.today()
+    # Calculate age
+    age = today.year - birthday.year - ((today.month, today.day) < (birthday.month, birthday.day))
+    return age >= 18
+
 
 
 def get_users(request):
@@ -75,11 +87,13 @@ def login(request):
             is_exec = user[5]
             first_name = user[1]
             last_name = user[2]
+            is_adult = is_over_18(user[3])
             TOKEN_STORE[token] = {
                 'user_email': email,
                 'is_exec': is_exec,
                 'first_name': first_name,
                 'last_name': last_name,
+                'is_adult': is_adult,
                 'expires_at': datetime.now() + timedelta(hours=1)
             }
 
@@ -89,6 +103,7 @@ def login(request):
                 'is_exec': is_exec,
                 'first_name': first_name,
                 'last_name': last_name,
+                'is_adult': is_adult,
                 'expires_in': 3600
             }, status=200)
         else:

@@ -14,13 +14,11 @@ export const AddDog = () => {
         getDataFromBackEnd('dogs/get_vendors/')
             .then((data) => data.json())
             .then((data) => {
-                console.log('data', data);
                 setVendors(data['vendors']);
             })
         getDataFromBackEnd('dogs/get_breeds/')
             .then((data) => data.json())
             .then((data) => {
-                console.log('data', data);
                 setBreedsType(data['breeds']);
             })
     }, []);

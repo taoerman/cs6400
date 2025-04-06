@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react"
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
-import { getDataFromBackEnd } from "./../utils";
+import { getCookie, getDataFromBackEnd } from "./../utils";
 
 export const Dogdashboard = () => {
   const [data, setData] = useState([]);
+  const [isUserAdult, setIsUserAdult] = useState(false);
   const [capacity, setCapacity] = useState({
     remainingSpace: 0
   });
@@ -19,8 +20,10 @@ export const Dogdashboard = () => {
       );
       setData(sortedRes);
     }
+    setIsUserAdult(getCookie('isAdult') === 'true');
     loadData();
   }, []);
+
   useEffect(() => {
     async function loadData() {
       const res = await getDataFromBackEnd('/dogs/shelter_capacity/');
@@ -121,19 +124,23 @@ export const Dogdashboard = () => {
                     <td>{dog.surrenderDate}</td>
                     <td>
                       {!dog.is_adopted ? (
-                        <button onClick={(e) => {
-                          e.stopPropagation();
-                          handleClick(4);
-                          setDogId(dog.id);
-                        }}
-                          className={styles["detail-link"]}>Add Expense</button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleClick(4);
+                            setDogId(dog.id);
+                          }}
+                          disabled={!isUserAdult}
+                          className={`
+                          ${styles["detail-link"]}
+                          ${!isUserAdult ? styles['under18'] : ""}
+                          `}>
+                          Add Expense
+                        </button>
 
                       ) : (
                         <span className={styles["reviewed-text"]}>No Expense Tracked</span>
-                      )
-
-
-                      }
+                      )}
                     </td>
                   </tr>
                 )

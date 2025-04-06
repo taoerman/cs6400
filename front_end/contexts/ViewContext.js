@@ -28,7 +28,7 @@ export const ViewProvider = ({ children }) => {
       dogName,
       setDogName,
       userType,
-      setUserType
+      setUserType,
     }}>
       {children}
     </ViewContext.Provider>

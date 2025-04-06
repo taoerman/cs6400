@@ -195,8 +195,12 @@ export const Volunteer = () => {
                       <td>{volunteer.userEmail}</td>
                       <td className={styles["text-center"]}>
                         <span
-                          className={`${styles["status-badge"]} ${isMilestoneBirthday(volunteer.birthDate) ? styles["milestone"] : ""
-                            }`}
+                          className={`
+                            ${styles["status-badge"]}
+                            ${isMilestoneBirthday(volunteer.birthDate)
+                              ? styles["milestone"]
+                              : ""}
+                            `}
                         >
                           {isMilestoneBirthday(volunteer.birthDate) ? "Yes" : "No"}
                         </span>
