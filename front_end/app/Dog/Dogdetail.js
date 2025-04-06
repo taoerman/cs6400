@@ -20,7 +20,6 @@ export const DogDetail = () => {
         const exp = await fetch('http://127.0.0.1:8000/expenses/' + dogId);
         const expdata = await exp.json();
         setExpensesData(expdata);
-        console.log(expdata);
         const tempData = {
             sex: result.sex,
             microchipID: result.microchipID,
@@ -28,6 +27,7 @@ export const DogDetail = () => {
             breeds:result.breeds
         };
         setEditData(tempData);
+        loadData();
     };
     useEffect(() => {
         //fetch breed type
@@ -121,10 +121,14 @@ export const DogDetail = () => {
     }
     const checkAdoptable = (data) => {
         if (data == null) return '';
-        if (data.altered && data.microchipID != null)
+        if (!data.is_adopted && data.altered && data.microchipID != null)
             return 'Yes'
         else
             return 'No'
+    }
+    const checkAdopted = (data) => {
+        if (data == null) return false;
+        return data.is_adopted;
     }
     return (
         <main className={styles["main-content"]}>
@@ -242,17 +246,24 @@ export const DogDetail = () => {
                 </div>
 
                 <div className={styles["detail-actions"]}>
-                    <button onClick={() => handleEdit()} className={styles["secondary-btn"]}>{editing ? 'Cancel' : 'Edit'}</button>
-                    <button onClick={() => handleSave()} className={styles["secondary-btn"]}>Save</button>
-                    <button onClick={() =>
-                        handleClick(4)
-                    } className={styles["secondary-btn"]}>
-                        Add Expense
-                    </button>
-                    {checkAdoptable(data)&&
-                    <button onClick={() => handleClick(10)} className={styles["primary-btn"]}>
-                        Add Adoption
-                    </button>}
+                    {!checkAdopted(data) && (
+                        <>
+                            <button onClick={() => handleEdit()} className={styles["secondary-btn"]}>
+                                {editing ? 'Cancel' : 'Edit'}
+                            </button>
+                            <button onClick={() => handleSave()} className={styles["secondary-btn"]}>
+                                Save
+                            </button>
+                            <button onClick={() => handleClick(4)} className={styles["secondary-btn"]}>
+                                Add Expense
+                            </button>
+                        </>
+                    )}
+                    {checkAdoptable(data) === 'Yes' && (
+                        <button onClick={() => handleClick(10)} className={styles["primary-btn"]}>
+                            Add Adoption
+                        </button>
+                    )}
                 </div>
             </div>
         </main >

@@ -181,6 +181,10 @@ def get_dog_by_id(request, dog_id):
             breed_rows = cursor.fetchall()
             dog['breeds'] = sorted([b[0] for b in breed_rows])
 
+            cursor.execute("SELECT DISTINCT dogID FROM Adoption")
+            adopted_ids = set(row[0] for row in cursor.fetchall())
+            dog['is_adopted'] = dog['id'] in adopted_ids
+
         return JsonResponse(dog, status=200)
 
     except Exception as e:
