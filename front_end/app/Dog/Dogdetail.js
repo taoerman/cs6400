@@ -230,7 +230,7 @@ export const DogDetail = () => {
                     } className={styles["secondary-btn"]}>
                         Add Expense
                     </button>
-                    <button onClick={() => handleClick(5)} className={styles["primary-btn"]}>
+                    <button onClick={() => handleClick(10)} className={styles["primary-btn"]}>
                         Add Adoption
                     </button>
                 </div>
