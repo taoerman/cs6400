@@ -3,7 +3,18 @@ import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
 
 export const DrillDown = ({ view }) => {
-  const { setCurrentView, currentView, currentReport, selectedYear, selectedMonth } = useView();
+  const monthNames = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const date = new Date();
+
+  const {
+    setCurrentView,
+    currentView,
+    currentReport,
+    reportMonth,
+    reportYear,
+  } = useView();
 
   const [animalControlSurrenders, setAnimalControlSurrenders] = useState([]);
   const [oldDogs, setOldDogs] = useState([]);
@@ -16,8 +27,8 @@ export const DrillDown = ({ view }) => {
   useEffect(() => {
     async function loadAnimalControlReport() {
       const params = new URLSearchParams({
-        month: 1,
-        year: 2025
+        month: reportMonth,
+        year: reportYear,
       });
       const res = await fetch(`http://127.0.0.1:8000/report/animal_control_monthly_details/?${params}`);
       const result = await res.json();
@@ -31,7 +42,9 @@ export const DrillDown = ({ view }) => {
   return (
     <main className={styles["main-content"]}>
       <div className={styles["dashboard-header"]}>
-        <h1 className={styles["page-title"]}>March 2024</h1>
+        <h1 className={styles["page-title"]}>
+          {monthNames[reportMonth - 1] + " " + reportYear}
+        </h1>
         <div className={styles["dashboard-actions"]}>
           <button onClick={() => handleClick(6)} className={`${styles["action-btn"]} ${styles["secondary-btn"]}`}>
             Back to Report
@@ -40,7 +53,7 @@ export const DrillDown = ({ view }) => {
       </div>
 
       <div className={styles["report-date"]}>
-        Report generated: <span id="currentDate">March 15, 2024</span>
+        Report generated: <span id="currentDate">{date.toLocaleDateString()}</span>
       </div>
 
       {/* Animal Control Surrenders View */}
