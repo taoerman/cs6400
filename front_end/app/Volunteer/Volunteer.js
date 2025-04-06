@@ -9,7 +9,6 @@ export const Volunteer = () => {
   const [filtered, setFiltered] = useState(false);
   const [filteredData, setFilteredData] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState((new Date().getMonth() + 1).toString());
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString())
 
   useEffect(() => {
     async function loadData() {
@@ -58,7 +57,7 @@ export const Volunteer = () => {
     return age > 0 && age % 10 === 0;
   };
 
-  const filterByBirthMonth = (volunteers, targetMonth, targetYear) => {
+  const filterByBirthMonth = (volunteers, targetMonth) => {
 
     const parseDate = (dateStr) => {
       const [year, month, day] = dateStr.split("-").map(Number);
@@ -71,12 +70,11 @@ export const Volunteer = () => {
       }
       const { year, month, day } = parseDate(volunteer.birthDate);
       const birthMonth = new Date(year, month - 1, day).getMonth() + 1;
-      const birthYear = new Date(year, month - 1, day).getFullYear()
-      return birthMonth.toString() === targetMonth && birthYear.toString() === targetYear;
+      return birthMonth.toString() === targetMonth;
     });
   };
 
-  const filteredVolunteers = filterByBirthMonth(data, selectedMonth, selectedYear);
+  const filteredVolunteers = filterByBirthMonth(data, selectedMonth);
 
   return (
     <main className={styles["main-content"]}>
@@ -169,7 +167,7 @@ export const Volunteer = () => {
             </div>
             <div className={styles["filter-group"]}>
               <label htmlFor="yearSelect">Year:</label>
-              <select id="yearSelect" className={styles["filter-select"]} value={selectedYear} onChange={(e)=>setSelectedYear(e.target.value)}>
+              <select id="yearSelect" className={styles["filter-select"]} defaultValue={new Date().getFullYear().toString()}>
                 <option >{new Date().getFullYear().toString()}</option>
                 <option >{(new Date().getFullYear() - 1).toString()}</option>
               </select>
