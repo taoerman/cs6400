@@ -1,15 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
 
 
 export const Report = () => {
-  const [page, setPage] = React.useState(1);
-  const [animalControlReport, setAnimalControlReport] = React.useState([]);
-  const [expenseAnalysis, setExpenseAnalysis] = React.useState([]);
-  const { setCurrentView, currentView } = useView();
-  const handleClick = (e, num) => {
+  const [page, setPage] = useState(1);
+  const [animalControlReport, setAnimalControlReport] = useState([]);
+  const [expenseAnalysis, setExpenseAnalysis] = useState([]);
+  const { currentView, setCurrentView, currentReport, setCurrentReport } = useView();
+  const handleClick = (e, num, report) => {
     e.preventDefault()
+    setCurrentReport(report)
     setCurrentView(num)
   }
 
@@ -81,7 +82,6 @@ export const Report = () => {
                   <tr key={month}>
                     <td>
                       <a
-                        onClick={(e) => handleClick(e, 7)}
                         className={styles["month-link"]}
                       >
                         {month}
@@ -89,7 +89,7 @@ export const Report = () => {
                     </td>
                     <td>
                       <a
-                        href={`drill-down.html?month=${m}&year=${y}&category=surrender`}
+                        onClick={(e) => handleClick(e, 7, 'asdf')}
                         className={styles["data-link"]}
                       >
                         {data[0]}

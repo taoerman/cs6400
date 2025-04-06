@@ -1,139 +1,148 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
-export const DrillDown = () => {
-    const { setCurrentView, currentView } = useView();
-    const handleClick = (num) => {
-        setCurrentView(num)
-      }    
-    return (
-        <main className={styles["main-content"]}>
-        <div className={styles["dashboard-header"]}>
-          <h1 className={styles["page-title"]}>March 2024</h1>
-          <div className={styles["dashboard-actions"]}>
-            <button onClick = {()=>handleClick(6)} className={`${styles["action-btn"]} ${styles["secondary-btn"]}`}>
-              Back to Report
-            </button>
-          </div>
+
+export const DrillDown = ({ view }) => {
+  const { setCurrentView, currentView, currentReport, selectedYear, selectedMonth } = useView();
+
+  const [animalControlSurrenders, setAnimalControlSurrenders] = useState([]);
+  const [oldDogs, setOldDogs] = useState([]);
+  const [totalExpense, setTotalExpense] = useState([]);
+
+  const handleClick = (num) => {
+    setCurrentView(num)
+  }
+
+  useEffect(() => {
+    async function loadAnimalControlReport() {
+      const params = new URLSearchParams({
+        month: 1,
+        year: 2025
+      });
+      const res = await fetch(`http://127.0.0.1:8000/report/animal_control_monthly_details/?${params}`);
+      const result = await res.json();
+      setAnimalControlSurrenders(result.animal_control_surrenders ?? []);
+      setOldDogs(result.adopted_60_plus_days ?? []);
+      setTotalExpense(result.adoption_expenses ?? []);
+    }
+    loadAnimalControlReport();
+  }, []);
+
+  return (
+    <main className={styles["main-content"]}>
+      <div className={styles["dashboard-header"]}>
+        <h1 className={styles["page-title"]}>March 2024</h1>
+        <div className={styles["dashboard-actions"]}>
+          <button onClick={() => handleClick(6)} className={`${styles["action-btn"]} ${styles["secondary-btn"]}`}>
+            Back to Report
+          </button>
         </div>
-  
-        <div className={styles["report-date"]}>
-          Report generated: <span id="currentDate">March 15, 2024</span>
+      </div>
+
+      <div className={styles["report-date"]}>
+        Report generated: <span id="currentDate">March 15, 2024</span>
+      </div>
+
+      {/* Animal Control Surrenders View */}
+      <div className={currentReport == "surrenderView" ? styles["report-section.active"] : styles["report-section"]} id="surrenderView">
+        <h2 className={styles["section-title"]}>Animal Control Surrenders</h2>
+        <div className={styles["report-table-container"]}>
+          <table className={styles["report-table"]}>
+            <thead>
+              <tr>
+                <th>Dog ID</th>
+                <th>Breed</th>
+                <th>Sex</th>
+                <th>Altered</th>
+                <th>Microchip ID</th>
+                <th>Surrender Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {animalControlSurrenders.map((row, index) => {
+                return (
+                  <tr key={index}>
+                    <td>{row.dogID}</td>
+                    <td>{row.breed}</td>
+                    <td>{row.sex}</td>
+                    <td>{row.altered ? "Yes" : "No"}</td>
+                    <td>{row.microchipID}</td>
+                    <td>{row.surrenderDate}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
-  
-        {/* Animal Control Surrenders View */}
-        <div className={styles["report-section"]} id="surrenderView">
-          <h2 className={styles["section-title"]}>Animal Control Surrenders</h2>
-          <div className={styles["report-table-container"]}>
-            <table className={styles["report-table"]}>
-              <thead>
-                <tr>
-                  <th>Dog ID</th>
-                  <th>Breed</th>
-                  <th>Sex</th>
-                  <th>Altered</th>
-                  <th>Microchip ID</th>
-                  <th>Surrender Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>AC1001</td>
-                  <td>German Shepherd, Husky</td>
-                  <td>Male</td>
-                  <td>Yes</td>
-                  <td>985141123456789</td>
-                  <td>2024-03-01</td>
-                </tr>
-                <tr>
-                  <td>AC1002</td>
-                  <td>Labrador Retriever, Pit Bull</td>
-                  <td>Female</td>
-                  <td>No</td>
-                  <td>985141123456790</td>
-                  <td>2024-03-05</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+      </div>
+
+      {/* Dogs Adopted (60+ Days) View */}
+      <div className={currentReport == "adoptionView" ? styles["report-section.active"] : styles["report-section"]} id="adoptionView">
+        <h2 className={styles["section-title"]}>Dogs Adopted (60+ Days in Rescue)</h2>
+        <div className={styles["report-table-container"]}>
+          <table className={styles["report-table"]}>
+            <thead>
+              <tr>
+                <th>Dog ID</th>
+                <th>Breed</th>
+                <th>Sex</th>
+                <th>Microchip ID</th>
+                <th>Surrender Date</th>
+                <th>Days in Rescue</th>
+              </tr>
+            </thead>
+            <tbody>
+              {oldDogs.map((row, index) => {
+                return (
+                  <tr key={index}>
+                    <td>{row.dogID}</td>
+                    <td>{row.breed}</td>
+                    <td>{row.sex}</td>
+                    <td>{row.microchipID}</td>
+                    <td>{row.surrenderDate}</td>
+                    <td>{row.daysInRescue}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
-  
-        {/* Dogs Adopted (60+ Days) View */}
-        <div className={styles["report-section"]} id="adoptionView">
-          <h2 className={styles["section-title"]}>Dogs Adopted (60+ Days in Rescue)</h2>
-          <div className={styles["report-table-container"]}>
-            <table className={styles["report-table"]}>
-              <thead>
-                <tr>
-                  <th>Dog ID</th>
-                  <th>Breed</th>
-                  <th>Sex</th>
-                  <th>Microchip ID</th>
-                  <th>Surrender Date</th>
-                  <th>Days in Rescue</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>AC1003</td>
-                  <td>Australian Shepherd, Border Collie</td>
-                  <td>Female</td>
-                  <td>985141123456791</td>
-                  <td>2023-12-15</td>
-                  <td>85</td>
-                </tr>
-                <tr>
-                  <td>AC1004</td>
-                  <td>Beagle, Dachshund</td>
-                  <td>Male</td>
-                  <td>985141123456792</td>
-                  <td>2023-12-20</td>
-                  <td>80</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+      </div>
+
+      {/* Total Expenses View */}
+      <div className={currentReport == "expenseView" ? styles["report-section.active"] : styles["report-section"]} id="expenseView">
+        <h2 className={styles["section-title"]}>Total Expenses for Adopted Dogs</h2>
+        <div className={styles["report-table-container"]}>
+          <table className={styles["report-table"]}>
+            <thead>
+              <tr>
+                <th>Dog ID</th>
+                <th>Breed</th>
+                <th>Sex</th>
+                <th>Microchip ID</th>
+                <th>Surrender Date</th>
+                <th>AC</th>
+                <th>Total Expenses</th>
+              </tr>
+            </thead>
+            <tbody>
+              {totalExpense.map((row, index) => {
+                return (
+                  <tr key={index}>
+                    <td>{row.dogID}</td>
+                    <td>{row.breed}</td>
+                    <td>{row.sex}</td>
+                    <td>{row.microchipID}</td>
+                    <td>{row.surrenderDate}</td>
+                    <td>{row.surrenderedByAnimalControl ? "Yes" : "No"}</td>
+                    <td>{'$ ' + row.totalExpenses}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
-  
-        {/* Total Expenses View */}
-        <div className={styles["report-section"]} id="expenseView">
-          <h2 className={styles["section-title"]}>Total Expenses for Adopted Dogs</h2>
-          <div className={styles["report-table-container"]}>
-            <table className={styles["report-table"]}>
-              <thead>
-                <tr>
-                  <th>Dog ID</th>
-                  <th>Breed</th>
-                  <th>Sex</th>
-                  <th>Microchip ID</th>
-                  <th>Surrender Date</th>
-                  <th>AC Surrender</th>
-                  <th>Total Expenses</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>AC1005</td>
-                  <td>Boxer, Pit Bull</td>
-                  <td>Male</td>
-                  <td>985141123456793</td>
-                  <td>2024-01-10</td>
-                  <td>Yes</td>
-                  <td>$850.00</td>
-                </tr>
-                <tr>
-                  <td>AC1006</td>
-                  <td>Chihuahua, Yorkshire Terrier</td>
-                  <td>Female</td>
-                  <td>985141123456794</td>
-                  <td>2024-01-15</td>
-                  <td>No</td>
-                  <td>$720.00</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </main>
-    )
+      </div>
+    </main>
+  )
 }
