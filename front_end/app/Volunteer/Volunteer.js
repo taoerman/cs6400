@@ -9,6 +9,7 @@ export const Volunteer = () => {
   const [filtered, setFiltered] = useState(false);
   const [filteredData, setFilteredData] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState((new Date().getMonth() + 1).toString());
+  const [selectedYear, setSelectedYear] = useState((new Date().getFullYear()).toString());
 
   useEffect(() => {
     async function loadData() {
