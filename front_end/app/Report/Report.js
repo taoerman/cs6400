@@ -7,11 +7,13 @@ export const Report = () => {
   const [page, setPage] = useState(1);
   const [animalControlReport, setAnimalControlReport] = useState([]);
   const [expenseAnalysis, setExpenseAnalysis] = useState([]);
-  const { currentView, setCurrentView, currentReport, setCurrentReport } = useView();
-  const handleClick = (e, num, report) => {
-    e.preventDefault()
-    setCurrentReport(report)
-    setCurrentView(num)
+  const { setCurrentView, setCurrentReport, setReportMonth, setReportYear } = useView();
+  const handleClick = (e, num, report, month, year) => {
+    e.preventDefault();
+    setCurrentReport(report);
+    setReportMonth(month);
+    setReportYear(year);
+    setCurrentView(num);
   }
 
   useEffect(() => {
@@ -89,7 +91,7 @@ export const Report = () => {
                     </td>
                     <td>
                       <a
-                        onClick={(e) => handleClick(e, 7, 'asdf')}
+                        onClick={(e) => handleClick(e, 7, 'surrenderView', m, y)}
                         className={styles["data-link"]}
                       >
                         {data[0]}
@@ -97,7 +99,7 @@ export const Report = () => {
                     </td>
                     <td>
                       <a
-                        href={`drill-down.html?month=${m}&year=${y}&category=adoption`}
+                        onClick={(e) => handleClick(e, 7, 'adoptionView', m, y)}
                         className={styles["data-link"]}
                       >
                         {data[1]}
@@ -105,7 +107,7 @@ export const Report = () => {
                     </td>
                     <td>
                       <a
-                        href={`drill-down.html?month=${m}&year=${y}&category=expenses`}
+                        onClick={(e) => handleClick(e, 7, 'expenseView', m, y)}
                         className={styles["data-link"]}
                       >
                         {'$ ' + data[2]}
