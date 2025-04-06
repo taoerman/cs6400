@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
-import {DropdownSelect} from '@/app/Common/Dropdown'
+import { DropdownSelect } from '@/app/Common/Dropdown'
 export const AddDog = () => {
     const { setCurrentView, currentView } = useView();
     const [vendors, setVendors] = useState([]);
@@ -49,10 +49,6 @@ export const AddDog = () => {
         }));
     };
     const handleBreedChange = (value) => {
-        if(value.includes('Unknown'))
-            value = 'Unknown'
-        else if(value.includes('Mixed'))
-            value = 'Mixed'
         setFormData((prevData) => ({
             ...prevData,
             breed: value
@@ -109,11 +105,11 @@ export const AddDog = () => {
                             <input type="text" id="name" name="name"
                                 value={formData.name}
                                 onChange={handleChange}
-                                 />
+                            />
                         </div>
                         <div className={styles["form-group"]}>
                             <label htmlFor="breed">Breed</label>
-                            <DropdownSelect selected={formData.breed} onChange={handleBreedChange} options = {breedsType} multiselect = {multiselect}/>
+                            <DropdownSelect selected={formData.breed} onChange={handleBreedChange} options={breedsType} multiselect={multiselect} setMultiselect={setMultiselect} />
                         </div>
                         <div className={styles["form-group"]}>
                             <label htmlFor="age">Age</label>
@@ -142,7 +138,7 @@ export const AddDog = () => {
                             <input type="number" id="weight" name="weight"
                                 value={formData.weight}
                                 onChange={handleChange}
-                                 />
+                            />
                         </div>
                         <div className={styles["form-group"]}>
                             <label htmlFor="altered">Altered</label>
@@ -184,7 +180,7 @@ export const AddDog = () => {
                             <input type="date" id="surrenderDate" name="surrenderDate"
                                 value={formData.surrenderDate}
                                 onChange={handleChange}
-                                 />
+                            />
                         </div>
                         <div className={styles["form-group"]}>
                             <label htmlFor="surrenderType">Surrender Type</label>
@@ -222,7 +218,7 @@ export const AddDog = () => {
                             <textarea id="description" name="description" rows="4"
                                 value={formData.description}
                                 onChange={handleChange}
-                                
+
                             ></textarea>
                         </div>
                         <div className={styles["form-group"]}>
@@ -239,7 +235,7 @@ export const AddDog = () => {
 
                 <div className={styles["form-actions"]}>
                     <button type="button" className={styles["secondary-btn"]} onClick={() => setCurrentView(1)}>Cancel</button>
-                    <button type="button" onClick={(e)=>handleSubmit(e)} className={styles["primary-btn"]}>Submit</button>
+                    <button type="button" onClick={(e) => handleSubmit(e)} className={styles["primary-btn"]}>Submit</button>
                 </div>
             </div>
         </main>
