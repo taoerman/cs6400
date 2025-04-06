@@ -1,15 +1,24 @@
 import React, { useState, useEffect } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
+import {DropdownSelect} from '@/app/Common/Dropdown'
 export const AddDog = () => {
     const { setCurrentView, currentView } = useView();
     const [vendors, setVendors] = useState([]);
+    const [breedsType, setBreedsType] = useState([]);
+    const [multiselect, setMultiselect] = useState(true)
     useEffect(() => {
         fetch('http://127.0.0.1:8000/dogs/get_vendors/')
             .then((data) => data.json())
             .then((data) => {
                 console.log('data', data);
                 setVendors(data['vendors']);
+            })
+        fetch('http://127.0.0.1:8000/dogs/get_breeds/')
+            .then((data) => data.json())
+            .then((data) => {
+                console.log('data', data);
+                setBreedsType(data['breeds']);
             })
     }, []);
     const handleClick = (num) => {
@@ -39,12 +48,22 @@ export const AddDog = () => {
             [name]: value
         }));
     };
+    const handleBreedChange = (value) => {
+        if(value.includes('Unknown'))
+            value = 'Unknown'
+        else if(value.includes('Mixed'))
+            value = 'Mixed'
+        setFormData((prevData) => ({
+            ...prevData,
+            breed: value
+        }));
+    }
     const handleSubmit = async (event) => {
         event.preventDefault();
 
         const formattedData = {
             name: formData.name,
-            breed: formData.breed.split(","),
+            breed: formData.breed,
             ageForMonths: parseInt(formData.age, 10) || 0,
             sex: formData.sex,
             altered: formData.altered === "yes",
@@ -81,7 +100,7 @@ export const AddDog = () => {
                 <h1>Add New Dog</h1>
             </div>
 
-            <form id="addDogForm" className={styles["add-dog-form"]} onSubmit={handleSubmit}>
+            <div id="addDogForm" className={styles["add-dog-form"]}>
                 <div className={styles["form-section"]}>
                     <h2>Basic Information</h2>
                     <div className={styles["form-grid"]}>
@@ -90,26 +109,23 @@ export const AddDog = () => {
                             <input type="text" id="name" name="name"
                                 value={formData.name}
                                 onChange={handleChange}
-                                required />
+                                 />
                         </div>
                         <div className={styles["form-group"]}>
                             <label htmlFor="breed">Breed</label>
-                            <input type="text" id="breed" name="breed"
-                                value={formData.breed}
-                                onChange={handleChange}
-                                required />
+                            <DropdownSelect selected={formData.breed} onChange={handleBreedChange} options = {breedsType} multiselect = {multiselect}/>
                         </div>
                         <div className={styles["form-group"]}>
                             <label htmlFor="age">Age</label>
                             <input type="number" id="age" name="age"
                                 value={formData.age}
-                                onChange={handleChange} required />
+                                onChange={handleChange} />
                         </div>
                         <div className={styles["form-group"]}>
                             <label htmlFor="sex">Gender</label>
                             <select id="sex" name="sex"
                                 value={formData.sex}
-                                onChange={handleChange} required>
+                                onChange={handleChange} >
                                 <option value="">Select Gender</option>
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
@@ -126,13 +142,13 @@ export const AddDog = () => {
                             <input type="number" id="weight" name="weight"
                                 value={formData.weight}
                                 onChange={handleChange}
-                                required />
+                                 />
                         </div>
                         <div className={styles["form-group"]}>
                             <label htmlFor="altered">Altered</label>
                             <select id="altered" name="altered"
                                 value={formData.altered}
-                                onChange={handleChange} required>
+                                onChange={handleChange} >
                                 <option value="">Select Status</option>
                                 <option value="yes">Yes</option>
                                 <option value="no">No</option>
@@ -168,13 +184,13 @@ export const AddDog = () => {
                             <input type="date" id="surrenderDate" name="surrenderDate"
                                 value={formData.surrenderDate}
                                 onChange={handleChange}
-                                required />
+                                 />
                         </div>
                         <div className={styles["form-group"]}>
                             <label htmlFor="surrenderType">Surrender Type</label>
                             <select id="surrenderType" name="surrenderType"
                                 value={formData.surrenderType}
-                                onChange={handleChange} required>
+                                onChange={handleChange} >
                                 <option value="">Select Type</option>
                                 <option value="owner">Owner Surrender</option>
                                 <option value="animalControl">Animal Control</option>
@@ -206,12 +222,12 @@ export const AddDog = () => {
                             <textarea id="description" name="description" rows="4"
                                 value={formData.description}
                                 onChange={handleChange}
-                                required
+                                
                             ></textarea>
                         </div>
                         <div className={styles["form-group"]}>
                             <label htmlFor="status">Status</label>
-                            <select id="status" name="status" required>
+                            <select id="status" name="status" >
                                 <option value="">Select Status</option>
                                 <option value="available">Available</option>
                                 <option value="pending">Adoption Pending</option>
@@ -223,9 +239,9 @@ export const AddDog = () => {
 
                 <div className={styles["form-actions"]}>
                     <button type="button" className={styles["secondary-btn"]} onClick={() => setCurrentView(1)}>Cancel</button>
-                    <button type="submit" className={styles["primary-btn"]}>Submit</button>
+                    <button type="button" onClick={(e)=>handleSubmit(e)} className={styles["primary-btn"]}>Submit</button>
                 </div>
-            </form>
+            </div>
         </main>
     )
 }
