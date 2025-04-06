@@ -179,30 +179,27 @@ def animal_control_monthly_details(request):
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
 
+
 @csrf_exempt
 def monthly_adoption_report(request):
     if request.method != 'GET':
         return JsonResponse({'error': 'Only GET allowed'}, status=405)
 
-    # if not request.session.get("isExecutiveDirector"):
-    #     return JsonResponse({"error": "Unauthorized"}, status=403)
-
     try:
         today = datetime.now(timezone.utc).date()
         start_month = (today.replace(day=1) - relativedelta(months=12))
-
-
-        report = []
+        report = {}
 
         with connection.cursor() as cursor:
             for i in range(12):
                 month_start = start_month + relativedelta(months=i)
                 year = month_start.year
                 month = month_start.month
-                month_end_day = calendar.monthrange(year, month)[1]
-                month_end = datetime(year, month, month_end_day).date()
+                month_end = datetime(year, month, calendar.monthrange(year, month)[1]).date()
+                month_label = f"{calendar.month_name[month]} {year}"
+                report[month_label] = []
 
-                # Get distinct breeds for dogs surrendered or adopted this month
+                # Get breeds involved in surrender or adoption
                 cursor.execute("""
                     SELECT DISTINCT b.breedName
                     FROM Breeds b
@@ -213,7 +210,7 @@ def monthly_adoption_report(request):
                 breed_list = sorted([row[0] for row in cursor.fetchall()])
 
                 for breed in breed_list:
-                    # Total surrendered
+                    # Surrender count
                     cursor.execute("""
                         SELECT COUNT(*) FROM Dog d
                         JOIN Breeds b ON d.id = b.dogID
@@ -221,66 +218,56 @@ def monthly_adoption_report(request):
                     """, [breed, month_start, month_end])
                     total_surrendered = cursor.fetchone()[0]
 
-                    # Total adopted
                     cursor.execute("""
                         SELECT d.id, d.name, d.surrenderedByAnimalControl
                         FROM Adoption a
-                        JOIN Dog d ON a.dogID = d.id
+                        JOIN Dog d ON d.id = a.dogID
                         JOIN Breeds b ON d.id = b.dogID
                         WHERE b.breedName = %s AND a.adoptionDate BETWEEN %s AND %s
                     """, [breed, month_start, month_end])
                     adopted_dogs = cursor.fetchall()
-                    total_adopted = len(adopted_dogs)
 
+                    total_adopted = len(set([d[0] for d in adopted_dogs]))
                     total_fees = 0.0
-                    for dog in adopted_dogs:
-                        dog_id, name, is_ac = dog
 
-                        # Total expenses for dog
+                    for dog_id, name, is_ac in adopted_dogs:
                         cursor.execute("SELECT SUM(expenseAmount) FROM Expense WHERE dogID = %s", [dog_id])
-                        expense_result = cursor.fetchone()[0]
-                        total_exp = float(expense_result) if expense_result else 0.0
+                        total_exp = float(cursor.fetchone()[0] or 0.0)
 
+                        # Special fee logic
                         if name.lower() == "sideways":
                             cursor.execute("SELECT breedName FROM Breeds WHERE dogID = %s", [dog_id])
-                            breed_names = [r[0].lower() for r in cursor.fetchall()]
-                            if any("terrier" in b for b in breed_names):
+                            breeds = [b[0].lower() for b in cursor.fetchall()]
+                            if any("terrier" in b for b in breeds):
                                 fee = 0.0
                             else:
                                 fee = round(total_exp * (0.1 if is_ac else 1.25), 2)
-                        elif is_ac:
-                            fee = round(total_exp * 0.10, 2)
                         else:
-                            fee = round(total_exp * 1.25, 2)
+                            fee = round(total_exp * (0.1 if is_ac else 1.25), 2)
 
                         total_fees += fee
 
-                    # Total expenses for adopted dogs excluding animal control
+                    # Expenses (exclude animal control dogs)
                     cursor.execute("""
                         SELECT SUM(e.expenseAmount)
                         FROM Expense e
-                        JOIN Dog d ON e.dogID = d.id
+                        JOIN Dog d ON d.id = e.dogID
                         JOIN Adoption a ON d.id = a.dogID
                         JOIN Breeds b ON d.id = b.dogID
-                        WHERE b.breedName = %s
-                          AND a.adoptionDate BETWEEN %s AND %s
-                          AND d.surrenderedByAnimalControl = 0
+                        WHERE b.breedName = %s AND a.adoptionDate BETWEEN %s AND %s AND d.surrenderedByAnimalControl = 0
                     """, [breed, month_start, month_end])
                     total_expenses = float(cursor.fetchone()[0] or 0.0)
 
-                    report.append({
-                        "month": f"{calendar.month_name[month]} {year}",
+                    report[month_label].append({
                         "breed": breed,
                         "totalSurrendered": total_surrendered,
                         "totalAdopted": total_adopted,
                         "totalAdoptionFees": round(total_fees, 2),
-                        "totalExpenses": total_expenses,
+                        "totalExpenses": round(total_expenses, 2),
                         "netProfit": round(total_fees - total_expenses, 2)
                     })
 
-        # Sort by month and breed
-        sorted_report = sorted(report, key=lambda r: (datetime.strptime(r['month'], "%B %Y"), r['breed']))
-        return JsonResponse({"report": sorted_report}, status=200)
+        return JsonResponse({"report": report}, status=200)
 
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
