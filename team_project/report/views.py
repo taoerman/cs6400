@@ -86,7 +86,7 @@ def animal_control_monthly_details(request):
             return JsonResponse({'error': 'Invalid month'}, status=400)
 
         start_date = datetime(year, month, 1).date()
-        end_day = monthrange(year, month)[1]
+        end_day = calendar.monthrange(year, month)[1]
         end_date = datetime(year, month, end_day).date()
 
         animal_control_surrenders = []
@@ -169,7 +169,7 @@ def animal_control_monthly_details(request):
                 })
 
         return JsonResponse({
-            'month': month_name[month],
+            'month': calendar.month_name[month],
             'year': year,
             'animal_control_surrenders': animal_control_surrenders,
             'adopted_60_plus_days': sorted(adopted_60_plus_days, key=lambda x: (-x['daysInRescue'], -x['dogID'])),
