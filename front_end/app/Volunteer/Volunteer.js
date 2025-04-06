@@ -9,7 +9,7 @@ export const Volunteer = () => {
   const [filtered, setFiltered] = useState(false);
   const [filteredData, setFilteredData] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState((new Date().getMonth() + 1).toString());
-  const [selectedYear, setSelectedYear] = useState((new Date().getYear() + 1).toString());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString())
 
   useEffect(() => {
     async function loadData() {
@@ -57,7 +57,7 @@ export const Volunteer = () => {
     return age > 0 && age % 10 === 0;
   };
 
-  const filterByBirthMonth = (volunteers, targetMonth) => {
+  const filterByBirthMonth = (volunteers, targetMonth, targetYear) => {
 
     const parseDate = (dateStr) => {
       const [year, month, day] = dateStr.split("-").map(Number);
@@ -70,11 +70,12 @@ export const Volunteer = () => {
       }
       const { year, month, day } = parseDate(volunteer.birthDate);
       const birthMonth = new Date(year, month - 1, day).getMonth() + 1;
-      return birthMonth.toString() === targetMonth;
+      const birthYear = new Date(year, month - 1, day).getFullYear()
+      return birthMonth.toString() === targetMonth && birthYear.toString() === targetYear;
     });
   };
 
-  const filteredVolunteers = filterByBirthMonth(data, selectedMonth);
+  const filteredVolunteers = filterByBirthMonth(data, selectedMonth, selectedYear);
 
   return (
     <main className={styles["main-content"]}>
@@ -177,7 +178,7 @@ export const Volunteer = () => {
                 <option >{(new Date().getFullYear() - 1).toString()}</option>
               </select>
             </div>
-          </div>
+          </div >
 
           <div className={styles["report-table-container"]}>
 
@@ -221,8 +222,8 @@ export const Volunteer = () => {
           <div className={styles["no-data-message"]} style={{ display: "none" }}>
             No volunteer birthdays this month!
           </div>
-        </div>
-      </div>
-    </main>
+        </div >
+      </div >
+    </main >
   )
 }
