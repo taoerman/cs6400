@@ -297,7 +297,7 @@ def get_all_applications(request):
             key = (application['adopterEmail'], application['applicationDate'])
             application['adoptedAlready'] = key in adopted_set
 
-        return JsonResponse({'applications': apps}, status=200)
+        return JsonResponse({'applications': applications}, status=200)
 
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")

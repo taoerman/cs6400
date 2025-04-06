@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from "react";
 import Modal from "../Common/Modal";
 import styles from "@/app/styles.module.css"
+import { useView } from "@/contexts/ViewContext";
 export const AddAdoption = () => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [keyword, setKeyword] = useState('')
   const [filtered, setFiltered] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
+  const [screen, setScreen] = useState(1);
+  const [fullData, setFullData] = useState([]);
+  const [application, setApplication] = useState({});
+  const { dogId, dogName } = useView();
   useEffect(() => {
     if (keyword === "")
       setFiltered(false)
@@ -20,14 +25,34 @@ export const AddAdoption = () => {
   }
   useEffect(() => {
     async function loadData() {
-      const res = await fetch('http://127.0.0.1:8000/adoptions/review_pending_applications/');
+      const res = await fetch('http://127.0.0.1:8000/adoptions/get_all_applications/');
       const result = await res.json();
-      setData(result.applications);
+      const data = result.applications.filter((item)=>item.isApproved == 1)
+      setFullData(data)
+      //remove duplicate
+      const map = new Map();
+      data.forEach(item => {
+        map.set(item['adopterEmail'], item);
+      });
+      setData([...map.values()]);
     }
     loadData();
   }, []);
-  const handleClick = async () => {
+  const handleClick = (email) => {
+    const appData = fullData.filter((item)=>item.adopterEmail == email) .sort((a, b) => new Date(b.applicationDate) - new Date(a.applicationDate))[0];
+    setScreen(1)
+    setApplication(appData)
     setModalOpen(true)
+  }
+  const handleSubmit = (id) => {
+    const body = {
+      dogID: dogId,
+      adopterId: id
+    }
+    fetch('http://127.0.0.1:8080/adoptions/finalize_adoption/', {
+      method: 'POST',
+      body: JSON.stringify(body)
+    })
   }
   return (
     <main className={styles["main-content"]}>
@@ -52,10 +77,7 @@ export const AddAdoption = () => {
         <table className={styles["dogs-table"]}>
           <thead>
             <tr>
-              <th>Application ID</th>
-              <th>Dog ID</th>
               <th>Adopter Name</th>
-              <th>Dog Name</th>
               <th>Adopter Email</th>
               <th>Adopter Phone</th>
               <th>Action</th>
@@ -63,31 +85,25 @@ export const AddAdoption = () => {
           </thead>
           <tbody>
             {
-              filtered ? filteredData.map((item) => {
+              filtered ? filteredData.map((item,index) => {
                 return (
-                  <tr key={item.applicationID}>
-                    <td>{item.applicationID}</td>
-                    <td>{item.dogID}</td>
-                    <td>{item.adopterName}</td>
-                    <td>{item.dogName}</td>
+                  <tr key={index}>
+                    <td>{item.adopterFirstName} {item.adopterLastName}</td>
                     <td>{item.adopterEmail}</td>
-                    <td>{item.phoneNumber}</td>
+                    <td>{item.adopterPhoneNumber}</td>
                     <td>
-                      <button onClick={() => handleClick(1, applicationID)} className={styles["detail-link"]}>select</button>
+                      <button onClick={() => handleClick(item.adopterEmail)} className={styles["detail-link"]}>select</button>
                     </td>
                   </tr>
                 )
-              }) : data.map((item) => {
+              }) : data.map((item,index) => {
                 return (
-                  <tr key={item.applicationID}>
-                    <td>{item.applicationID}</td>
-                    <td>{item.dogID}</td>
-                    <td>{item.adopterName}</td>
-                    <td>{item.dogName}</td>
+                  <tr key={index}>
+                    <td>{item.adopterFirstName} {item.adopterLastName}</td>
                     <td>{item.adopterEmail}</td>
-                    <td>{item.phoneNumber}</td>
+                    <td>{item.adopterPhoneNumber}</td>
                     <td>
-                      <button onClick={() => handleClick()} className={styles["detail-link"]}>select</button>
+                      <button onClick={() => handleClick(item.adopterEmail)} className={styles["detail-link"]}>select</button>
                     </td>
                   </tr>
                 )
@@ -98,7 +114,50 @@ export const AddAdoption = () => {
       </div>
       <div>
         <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
-          <div>
+          {screen === 1?(<div>
+            <form id="app detail" className={styles["expense-form"]}>
+              <div className={styles["form-section"]}>
+                <h2>Application Details</h2>
+                <div className={styles["form-grid"]}>
+                  <div className={styles["form-group"]}>
+                    <label>Adopter Name</label>
+                    <div>{application.adopterFirstName} {application.adopterLastName}</div>
+                  </div>
+                </div>
+                <div className={styles["form-grid"]}>
+                  <div className={styles["form-group"]}>
+                    <label>Application Date</label>
+                    <div>{application.applicationDate}</div>
+                  </div>
+                </div>
+                <div className={styles["form-grid"]}>
+                  <div className={styles["form-group"]}>
+                    <label>Adopter Email</label>
+                    <div>{application.adopterEmail}</div>
+              
+                  </div>
+                </div>
+                <div className={styles["form-grid"]}>
+                  <div className={styles["form-group"]}>
+                    <label>Adopter Phone</label>
+                    <div>{application.adopterPhoneNumber}</div>
+                  </div>
+                </div>
+                <div className={styles["form-grid"]}>
+                  <div className={styles["form-group"]}>
+                    <label>Adopter Address</label>
+                    <div> {application.AdopterStreet}, {application.adopterCity}, {application.adopterState} {application.adopterZipCode}</div>
+                  </div>
+                </div>
+                <div className={styles["form-actions"]}>
+                <button onClick={() => setScreen(2)} type="button" className={styles["secondary-btn"]}
+                >Confirm</button>
+              </div>
+              </div>
+            </form>
+
+          </div>):
+          (<div>
             <form id="addExpenseForm" className={styles["expense-form"]}>
               <div className={styles["form-section"]}>
                 <h2>Adoption Details</h2>
@@ -113,25 +172,25 @@ export const AddAdoption = () => {
                 <div className={styles["form-grid"]}>
                   <div className={styles["form-group"]}>
                     <label>Dog's Name</label>
-                    <div>TEST</div>
+                    <div>{dogName}</div>
                   </div>
                 </div>
                 <div className={styles["form-grid"]}>
                   <div className={styles["form-group"]}>
                     <label>Adopter's Name</label>
-                    <div>TEST</div>
+                    <div>{application.adopterFirstName} {application.adopterLastName}</div>
                   </div>
                 </div>
                 <div className={styles["form-grid"]}>
                   <div className={styles["form-group"]}>
                     <label>Adopter's Email</label>
-                    <div>example@example.com</div>
+                    <div>{application.adopterEmail}</div>
                   </div>
                 </div>
                 <div className={styles["form-grid"]}>
                   <div className={styles["form-group"]}>
                     <label>Adopter's Phone</label>
-                    <div>000-000-0000</div>
+                    <div>{application.adopterPhoneNumber}</div>
                   </div>
                 </div>
                 <div className={styles["form-grid"]}>
@@ -143,12 +202,12 @@ export const AddAdoption = () => {
               </div>
 
               <div className={styles["form-actions"]}>
-                <button onClick={() => handleClick(3)} type="button" className={styles["secondary-btn"]}
+                <button onClick={() => setModalOpen(false)} type="button" className={styles["secondary-btn"]}
                 >Cancel</button>
-                <button type="submit" className={styles["primary-btn"]}>Submit</button>
+                <button onClick={()=>handleSubmit(application.adopterId)} className={styles["primary-btn"]}>Submit</button>
               </div>
             </form>
-          </div>
+          </div>)}
         </Modal>
       </div>
     </main>
