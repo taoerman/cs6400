@@ -9,6 +9,7 @@ export const Volunteer = () => {
   const [filtered, setFiltered] = useState(false);
   const [filteredData, setFilteredData] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState((new Date().getMonth() + 1).toString());
+  const [selectedYear, setSelectedYear] = useState((new Date().getYear() + 1).toString());
 
   useEffect(() => {
     async function loadData() {
@@ -51,8 +52,7 @@ export const Volunteer = () => {
     if (isNaN(birthDateObj.getTime())) return false;
 
     const birthYear = birthDateObj.getFullYear();
-    const currentYear = today.getFullYear();
-    let age = currentYear - birthYear;
+    let age = selectedYear - birthYear;
 
     return age > 0 && age % 10 === 0;
   };
@@ -167,7 +167,12 @@ export const Volunteer = () => {
             </div>
             <div className={styles["filter-group"]}>
               <label htmlFor="yearSelect">Year:</label>
-              <select id="yearSelect" className={styles["filter-select"]} defaultValue={new Date().getFullYear().toString()}>
+              <select
+                id="yearSelect"
+                className={styles["filter-select"]}
+                defaultValue={new Date().getFullYear().toString()}
+                onChange={(e) => setSelectedYear(e.target.value)}
+              >
                 <option >{new Date().getFullYear().toString()}</option>
                 <option >{(new Date().getFullYear() - 1).toString()}</option>
               </select>
