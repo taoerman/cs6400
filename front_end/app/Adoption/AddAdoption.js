@@ -24,16 +24,16 @@ export const AddAdoption = () => {
   const handleChange = (e) => {
     setKeyword(e.target.value)
   }
-  useEffect(()=>{
+  useEffect(() => {
     fetch('http://127.0.0.1:8000/adoptions/get_adoption_fee_by_dogid/' + dogId)
-    .then((res)=>res.json())
-    .then((data)=>setAdoptionFee(data['adoptionFee']))
-  },[])
+      .then((res) => res.json())
+      .then((data) => setAdoptionFee(data['adoptionFee']))
+  }, [])
   useEffect(() => {
     async function loadData() {
       const res = await fetch('http://127.0.0.1:8000/adoptions/get_all_applications/');
       const result = await res.json();
-      const data = result.applications.filter((item)=>item.isApproved == 1)
+      const data = result.applications.filter((item) => item.isApproved == 1)
       setFullData(data)
       //remove duplicate
       const map = new Map();
@@ -45,7 +45,7 @@ export const AddAdoption = () => {
     loadData();
   }, []);
   const handleClick = (email) => {
-    const appData = fullData.filter((item)=>item.adopterEmail == email) .sort((a, b) => new Date(b.applicationDate) - new Date(a.applicationDate))[0];
+    const appData = fullData.filter((item) => item.adopterEmail == email).sort((a, b) => new Date(b.applicationDate) - new Date(a.applicationDate))[0];
     setScreen(1)
     setApplication(appData)
     setModalOpen(true)
@@ -63,9 +63,9 @@ export const AddAdoption = () => {
         },
         body: JSON.stringify(body)
       });
-    
+
       if (!response.ok) {
-        const errorText = await response.text(); /
+        const errorText = await response.text();
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
       alert('Adoption added!')
@@ -104,7 +104,7 @@ export const AddAdoption = () => {
           </thead>
           <tbody>
             {
-              filtered ? filteredData.map((item,index) => {
+              filtered ? filteredData.map((item, index) => {
                 return (
                   <tr key={index}>
                     <td>{item.adopterFirstName} {item.adopterLastName}</td>
@@ -115,7 +115,7 @@ export const AddAdoption = () => {
                     </td>
                   </tr>
                 )
-              }) : data.map((item,index) => {
+              }) : data.map((item, index) => {
                 return (
                   <tr key={index}>
                     <td>{item.adopterFirstName} {item.adopterLastName}</td>
@@ -133,7 +133,7 @@ export const AddAdoption = () => {
       </div>
       <div>
         <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
-          {screen === 1?(<div>
+          {screen === 1 ? (<div>
             <form id="app detail" className={styles["expense-form"]}>
               <div className={styles["form-section"]}>
                 <h2>Application Details</h2>
@@ -153,7 +153,7 @@ export const AddAdoption = () => {
                   <div className={styles["form-group"]}>
                     <label>Adopter Email</label>
                     <div>{application.adopterEmail}</div>
-              
+
                   </div>
                 </div>
                 <div className={styles["form-grid"]}>
@@ -169,64 +169,64 @@ export const AddAdoption = () => {
                   </div>
                 </div>
                 <div className={styles["form-actions"]}>
-                <button onClick={() => setScreen(2)} type="button" className={styles["secondary-btn"]}
-                >Confirm</button>
-              </div>
+                  <button onClick={() => setScreen(2)} type="button" className={styles["secondary-btn"]}
+                  >Confirm</button>
+                </div>
               </div>
             </form>
 
-          </div>):
-          (<div>
-            <form id="addExpenseForm" className={styles["expense-form"]}>
-              <div className={styles["form-section"]}>
-                <h2>Adoption Details</h2>
-                <div className={styles["form-grid"]}>
-                  <div className={styles["form-group"]}>
-                    <label htmlFor="expenseDate">Date</label>
-                    <input type="date" id="expenseDate" name="expenseDate"
-                      onChange={handleChange} required />
-                  </div>
+          </div>) :
+            (<div>
+              <form id="addExpenseForm" className={styles["expense-form"]}>
+                <div className={styles["form-section"]}>
+                  <h2>Adoption Details</h2>
+                  <div className={styles["form-grid"]}>
+                    <div className={styles["form-group"]}>
+                      <label htmlFor="expenseDate">Date</label>
+                      <input type="date" id="expenseDate" name="expenseDate"
+                        onChange={handleChange} required />
+                    </div>
 
-                </div>
-                <div className={styles["form-grid"]}>
-                  <div className={styles["form-group"]}>
-                    <label>Dog's Name</label>
-                    <div>{dogName}</div>
+                  </div>
+                  <div className={styles["form-grid"]}>
+                    <div className={styles["form-group"]}>
+                      <label>Dog's Name</label>
+                      <div>{dogName}</div>
+                    </div>
+                  </div>
+                  <div className={styles["form-grid"]}>
+                    <div className={styles["form-group"]}>
+                      <label>Adopter's Name</label>
+                      <div>{application.adopterFirstName} {application.adopterLastName}</div>
+                    </div>
+                  </div>
+                  <div className={styles["form-grid"]}>
+                    <div className={styles["form-group"]}>
+                      <label>Adopter's Email</label>
+                      <div>{application.adopterEmail}</div>
+                    </div>
+                  </div>
+                  <div className={styles["form-grid"]}>
+                    <div className={styles["form-group"]}>
+                      <label>Adopter's Phone</label>
+                      <div>{application.adopterPhoneNumber}</div>
+                    </div>
+                  </div>
+                  <div className={styles["form-grid"]}>
+                    <div className={styles["form-group"]}>
+                      <label>Adoption Fee</label>
+                      <div>{adoptionFee}</div>
+                    </div>
                   </div>
                 </div>
-                <div className={styles["form-grid"]}>
-                  <div className={styles["form-group"]}>
-                    <label>Adopter's Name</label>
-                    <div>{application.adopterFirstName} {application.adopterLastName}</div>
-                  </div>
-                </div>
-                <div className={styles["form-grid"]}>
-                  <div className={styles["form-group"]}>
-                    <label>Adopter's Email</label>
-                    <div>{application.adopterEmail}</div>
-                  </div>
-                </div>
-                <div className={styles["form-grid"]}>
-                  <div className={styles["form-group"]}>
-                    <label>Adopter's Phone</label>
-                    <div>{application.adopterPhoneNumber}</div>
-                  </div>
-                </div>
-                <div className={styles["form-grid"]}>
-                  <div className={styles["form-group"]}>
-                    <label>Adoption Fee</label>
-                    <div>{adoptionFee}</div>
-                  </div>
-                </div>
-              </div>
 
-              <div className={styles["form-actions"]}>
-                <button onClick={() => setModalOpen(false)} type="button" className={styles["secondary-btn"]}
-                >Cancel</button>
-                <button onClick={()=>handleSubmit(application.adopterId)} className={styles["primary-btn"]}>Submit</button>
-              </div>
-            </form>
-          </div>)}
+                <div className={styles["form-actions"]}>
+                  <button onClick={() => setModalOpen(false)} type="button" className={styles["secondary-btn"]}
+                  >Cancel</button>
+                  <button onClick={() => handleSubmit(application.adopterId)} className={styles["primary-btn"]}>Submit</button>
+                </div>
+              </form>
+            </div>)}
         </Modal>
       </div>
     </main>
