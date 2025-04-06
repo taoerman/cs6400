@@ -9,7 +9,7 @@ import { useView } from '@/contexts/ViewContext';
 import { Report } from "../Report/Report";
 import { Volunteer } from "../Volunteer/Volunteer";
 import { DrillDown } from "../Report/DrillDown";
-import { AdoptionReview } from '../Adoption/AdoptionReview'
+import { AdoptionApplicationReview } from '../Adoption/AdoptionApplicationReview'
 import { AddAdoption } from '../Adoption/AddAdoption'
 export const Dashboard = () => {
   const { currentView } = useView();
@@ -23,7 +23,7 @@ export const Dashboard = () => {
       case 6: return <Report />;
       case 7: return <DrillDown />;
       case 8: return <Volunteer />;
-      case 9: return <AdoptionReview />;
+      case 9: return <AdoptionApplicationReview />;
       case 10: return <AddAdoption />;
       default: return null;
     }
