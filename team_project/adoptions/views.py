@@ -160,14 +160,15 @@ def finalize_adoption(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Only POST allowed'}, status=405)
 
-    if not request.session.get('isExecutiveDirector'):
-        return JsonResponse({'error': 'Only Executive Directors can finalize adoptions.'}, status=403)
+    # if not request.session.get('isExecutiveDirector'):
+    #     return JsonResponse({'error': 'Only Executive Directors can finalize adoptions.'}, status=403)
 
     try:
         data = json.loads(request.body)
         dogID = data.get('dogID')
         adopterEmail = data.get('adopterEmail')
-
+        adoptionDate = data.get('adoptionDate')
+        print(dogID, adopterEmail)
         with connection.cursor() as cursor:
             # Check if there is an approved application for this dog + adopter
             cursor.execute("""
@@ -182,8 +183,8 @@ def finalize_adoption(request):
             # Insert into Adoption table
             cursor.execute("""
                 INSERT INTO Adoption (dogID, adopterEmail, applicationDate, adoptionDate)
-                VALUES (%s, %s, %s, CURRENT_DATE)
-            """, [dogID, adopterEmail, app_row[0]])
+                VALUES (%s, %s, %s, %s)
+            """, [dogID, adopterEmail, app_row[0],adoptionDate])
 
         return JsonResponse({
             'message': 'Adoption finalized successfully',
