@@ -11,7 +11,7 @@ def animal_control_report(request):
         return JsonResponse({'error': 'Only GET allowed'}, status=405)
 
     try:
-        today = datetime.now(timezone.utc).date()
+        today = datetime.now()
         first_day_current_month = today.replace(day=1)
         start_month = first_day_current_month - relativedelta(months=6)
 
