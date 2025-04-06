@@ -25,6 +25,8 @@ export const ViewProvider = ({ children }) => {
       setReportYear,
       dogId,
       setDogId,
+      dogName,
+      setDogName,
       userType,
       setUserType
     }}>

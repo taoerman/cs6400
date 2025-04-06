@@ -184,13 +184,13 @@ export const AddAdoption = () => {
                 </div>
                 <div className={styles["form-actions"]}>
                   <button onClick={() => setScreen(2)} type="button" className={styles["secondary-btn"]}
-                  >Confirm</button>
+                  >Next</button>
                 </div>
               </div>
             </form>
-
-          </div>) :
-            (<div>
+          </div>
+          ) : (
+            <div>
               <form id="addApplicationForm" className={styles["expense-form"]}>
                 <div className={styles["form-section"]}>
                   <h2>Adoption Details</h2>
@@ -229,7 +229,7 @@ export const AddAdoption = () => {
                   <div className={styles["form-grid"]}>
                     <div className={styles["form-group"]}>
                       <label>Adoption Fee</label>
-                      <div>{adoptionFee}</div>
+                      <div>{'$ ' + adoptionFee}</div>
                     </div>
                   </div>
                 </div>

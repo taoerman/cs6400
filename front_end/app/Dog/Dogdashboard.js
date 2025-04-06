@@ -28,7 +28,7 @@ export const Dogdashboard = () => {
     loadData();
   }, []);
 
-  const { setCurrentView, currentView, dogId, setDogId } = useView();
+  const { setCurrentView, currentView, dogId, setDogId, setDogName } = useView();
   const handleClick = (num) => {
     setCurrentView(num)
   }
@@ -108,6 +108,7 @@ export const Dogdashboard = () => {
                   <tr key={dog.id} onClick={() => {
                     handleClick(3);
                     setDogId(dog.id);
+                    setDogName(dog.name);
                   }} >
                     <td>{dog.name}</td>
                     <td>{dog.breeds ? dog.breeds.join(' / ') : ''}</td>
