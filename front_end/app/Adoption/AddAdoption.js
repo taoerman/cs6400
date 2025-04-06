@@ -13,6 +13,7 @@ export const AddAdoption = () => {
   const [application, setApplication] = useState({});
   const [adoptionFee, setAdoptionFee] = useState(0);
   const { dogId, dogName } = useView();
+  const [finalDate, setFinalDate] = useState(new Date().toISOString().split('T')[0])
   useEffect(() => {
     if (keyword === "")
       setFiltered(false)
@@ -23,6 +24,9 @@ export const AddAdoption = () => {
   }, [keyword])
   const handleChange = (e) => {
     setKeyword(e.target.value)
+  }
+  const handleDateInput = (e) =>{
+    setFinalDate(e.target.value)
   }
   useEffect(()=>{
     fetch('http://127.0.0.1:8000/adoptions/get_adoption_fee_by_dogid/' + dogId)
@@ -50,22 +54,23 @@ export const AddAdoption = () => {
     setApplication(appData)
     setModalOpen(true)
   }
-  const handleSubmit = async (id) => {
+  const handleSubmit = async (email) => {
     const body = {
       dogID: dogId,
-      adopterId: id
+      adopterEmail: email,
+      adoptionDate: finalDate
     }
     try {
-      const response = await fetch('http://127.0.0.1:8080/adoptions/finalize_adoption/', {
+      const response = await fetch('http://127.0.0.1:8000/adoptions/finalize_adoption/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(body)
       });
-    
+      
       if (!response.ok) {
-        const errorText = await response.text(); /
+        const errorText = await response.text();
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
       alert('Adoption added!')
@@ -177,14 +182,14 @@ export const AddAdoption = () => {
 
           </div>):
           (<div>
-            <form id="addExpenseForm" className={styles["expense-form"]}>
+            <form id="addApplicationForm" className={styles["expense-form"]}>
               <div className={styles["form-section"]}>
                 <h2>Adoption Details</h2>
                 <div className={styles["form-grid"]}>
                   <div className={styles["form-group"]}>
-                    <label htmlFor="expenseDate">Date</label>
-                    <input type="date" id="expenseDate" name="expenseDate"
-                      onChange={handleChange} required />
+                    <label htmlFor="applicationDate">Date</label>
+                    <input type="date" id="expenseDate" value={finalDate} name="applicationDate"
+                      onChange={(e)=>handleDateInput(e)} required />
                   </div>
 
                 </div>
@@ -223,7 +228,7 @@ export const AddAdoption = () => {
               <div className={styles["form-actions"]}>
                 <button onClick={() => setModalOpen(false)} type="button" className={styles["secondary-btn"]}
                 >Cancel</button>
-                <button onClick={()=>handleSubmit(application.adopterId)} className={styles["primary-btn"]}>Submit</button>
+                <button onClick={()=>handleSubmit(application.adopterEmail)} className={styles["primary-btn"]}>Submit</button>
               </div>
             </form>
           </div>)}
