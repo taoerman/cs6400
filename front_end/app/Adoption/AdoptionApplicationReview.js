@@ -7,14 +7,26 @@ export const AdoptionApplicationReview = () => {
   const [keyword, setKeyword] = useState('');
   const [filtered, setFiltered] = useState(false)
   const [filter, setFilter] = useState('pending');
+  const [searchData, setSearchData] = useState([]);
+
   useEffect(() => {
-    if (keyword === "")
-      setFiltered(false)
-    else {
-      setFiltered(true)
-      setFilteredData(data.filter((item) => item.adopterName.toLowerCase().includes(keyword.toLowerCase())))
+    let result = data;
+    if (filter !== 'all') {
+      result = data.filter((item) => {
+        if (filter === 'approved') return item.isApproved === 1;
+        if (filter === 'rejected') return item.isRejected === 1;
+        if (filter === 'pending') return item.isApproved === 0 && item.isRejected === 0;
+        return true;
+      });
     }
-  }, [keyword])
+
+    if (keyword.trim() !== '') {
+      result = result.filter((item) =>
+        item.adopterLastName.toLowerCase().includes(keyword.toLowerCase())
+      );
+    }
+    setSearchData(result);
+  }, [keyword, filter, data])
   const handleChange = (e) => {
     setKeyword(e.target.value)
   }
@@ -26,20 +38,6 @@ export const AdoptionApplicationReview = () => {
     }
     loadData();
   }, []);
-
-  const filteredApplication = data.filter(application => {
-    if (filter === 'all') return true;
-    const { isApproved, isRejected } = application;
-    if (isApproved === 1) {
-      return filter === 'approved';
-    } else if (isRejected === 1) {
-      return filter === 'rejected';
-    } else if (isApproved === 0 && isRejected === 0) {
-      return filter === 'pending';
-    }
-
-    return false;
-  });
 
   const handleClick = async (type, adopterEmail, applicationDate) => {
     const body = {
@@ -89,7 +87,9 @@ export const AdoptionApplicationReview = () => {
           <div className={styles["search-group"]}>
             <label>Search Adopter Name:</label>
             <div className={styles["search-input-wrapper"]}>
-              <input value={keyword} onChange={(e) => handleChange(e)} type="text" id="searchInput" />
+              <input value={keyword} onChange={(e) => handleChange(e)} type="text" id="searchInput"
+                className={styles["search-input"]}
+                placeholder="Enter last name..." />
               <button type="button" className={styles["search-button"]}>
                 <i className={styles["fas fa-search"]}></i>
               </button>
@@ -109,7 +109,7 @@ export const AdoptionApplicationReview = () => {
           </thead>
           <tbody>
             {
-              filteredApplication.map((item, index) => {
+              searchData.map((item, index) => {
                 return (
                   <tr key={index}>
                     <td>{item.adopterFirstName + " " + item.adopterLastName}</td>

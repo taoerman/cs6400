@@ -6,7 +6,7 @@ export const Dogdashboard = () => {
   const [capacity, setCapacity] = useState({
     remainingSpace: 0
   });
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('current');
   const maxDogNum = process.env.NEXT_PUBLIC_MAX_SHELTER_CAPACITY
   useEffect(() => {
     async function loadData() {
@@ -41,8 +41,10 @@ export const Dogdashboard = () => {
 
   const filteredData = data.filter(dog => {
     if (filter === 'all') return true;
-    const isAdoptable = !dog.is_adopted && dog.altered && dog.microchipID != null;
-    return filter === 'adoptable' ? isAdoptable : !isAdoptable;
+    if (filter === 'adopted') return dog.is_adopted;
+    if (filter === 'current') return !dog.is_adopted;
+    if (filter === 'adoptable') return !dog.is_adopted && dog.altered && dog.microchipID != null;
+    if (filter === 'not-adoptable') return !dog.is_adopted && (!dog.altered || dog.microchipID == null);
   });
 
   return (
@@ -66,6 +68,8 @@ export const Dogdashboard = () => {
               value={filter}
               onChange={(e) => setFilter(e.target.value)}>
               <option value="all">All Dogs</option>
+              <option value="adopted">Adopted</option>
+              <option value="current">Dogs in Shelter</option>
               <option value="adoptable">Adoptable</option>
               <option value="not-adoptable">Not Adoptable</option>
             </select>
@@ -113,12 +117,20 @@ export const Dogdashboard = () => {
                     <td>{checkAdoptable(dog)}</td>
                     <td>{dog.surrenderDate}</td>
                     <td>
-                      <button onClick={(e) => {
-                        e.stopPropagation();
-                        handleClick(4);
-                        setDogId(dog.id);
-                      }}
-                        className={styles["detail-link"]}>Add Expense</button>
+                      {!dog.is_adopted ? (
+                        <button onClick={(e) => {
+                          e.stopPropagation();
+                          handleClick(4);
+                          setDogId(dog.id);
+                        }}
+                          className={styles["detail-link"]}>Add Expense</button>
+
+                      ) : (
+                        <span className={styles["reviewed-text"]}>No Expense Tracked</span>
+                      )
+
+
+                      }
                     </td>
                   </tr>
                 )
