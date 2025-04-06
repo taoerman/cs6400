@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
+import {DropdownSelect} from '@/app/Common/Dropdown'
 export const DogDetail = () => {
     const { setCurrentView, currentView, dogId, setDogId } = useView();
     const [data, setData] = useState();
@@ -10,10 +11,12 @@ export const DogDetail = () => {
     const [editing, setEditing] = useState(false)
     const [editData, setEditData] = useState({})
     const [breedType, setBreedType] = useState([])
+    const [multiselect, setMultiselect] = useState(true)
     const loadData = async () => {
         const res = await fetch('http://127.0.0.1:8000/dogs/get_dog/' + dogId);
         const result = await res.json();
         setData(result);
+        
         const exp = await fetch('http://127.0.0.1:8000/expenses/' + dogId);
         const expdata = await exp.json();
         setExpensesData(expdata);
@@ -22,13 +25,18 @@ export const DogDetail = () => {
             sex: result.sex,
             microchipID: result.microchipID,
             altered: result.altered,
+            breeds:result.breeds
         };
         setEditData(tempData);
     };
     useEffect(() => {
         //fetch breed type
-        const data = ['Affenpinscher', 'Boykin Spaniel', 'Finnish Spitz', 'Manchester Terrier']
-        setBreedType(data)
+        fetch('http://127.0.0.1:8000/dogs/get_breeds/')
+            .then((data) => data.json())
+            .then((data) => {
+                console.log('data', data);
+                setBreedType(data['breeds']);
+            })
     }, [])
 
     const { categoryTotals, grandTotal } = useMemo(() => {
@@ -59,11 +67,17 @@ export const DogDetail = () => {
         loadData();
     }, [dogId]);
     const handleSave = async () => {
-        const body = JSON.stringify({ ...editData, breed: editData.breed.split(",").map(item => item.trim()) })
-        const res = await fetch('http://127.0.0.1:8000/dogs/edit_dog/' + dogId + '/', { method: 'PUT', body: body })
+        const { breeds, ...dataWithoutBreed } = editData;
+        const body = JSON.stringify(dataWithoutBreed)
+        const body_breed = JSON.stringify(breeds)
+        const [res1, res2] = await Promise.all([fetch('http://127.0.0.1:8000/dogs/edit_dog/' + dogId + '/', { method: 'PUT', body: body }),
+            fetch('http://127.0.0.1:8000/dogs/save_breed/', {method:'POST', body: body_breed})
+        ])
         //if success, reload dog data
-        if (res.ok) {
+        if (res1.ok && res2.ok) {
             loadData()
+        }else{
+            throw new Error("Save dog failed!");
         }
     }
     const handleInput = (e, type) => {
@@ -80,12 +94,23 @@ export const DogDetail = () => {
             setEditData({ ...editData, [key]: value });
         }
     }
+    const handleBreedChange = (value) => {
+        if(value.includes('Unknown'))
+            value = 'Unknown'
+        else if(value.includes('Mixed'))
+            value = 'Mixed'
+        console.log(value)
+        setEditData((prevData) => ({
+            ...prevData,
+            breeds: value
+        }));
+    }
     const handleEdit = () => {
         //reset edit data
         const tempData = {
             sex: data.sex,
             microchipID: data.microchipID,
-            breed: JSON.parse(data.breed).join(', '),
+            breeds: data.breeds,
             altered: data.altered,
         };
         setEditData(tempData);
@@ -120,13 +145,7 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Breed</label>
-                            {editing && ['Unknown', 'Mixed'].includes(JSON.parse(data.breed).join(', ')) ? <select className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" value={editData.breed} onChange={(e) => handleInput(e, 'breed')}>
-                                {breedType.map((breed) => (
-                                    <option key={breed} value={breed}>
-                                        {breed}
-                                    </option>
-                                ))}
-                            </select> : <span>{data != null && data.breed ? JSON.parse(data.breed).join(', ') : ''}</span>}
+                            {editing ? <DropdownSelect selected={editData.breeds} onChange={handleBreedChange} options = {breedType} multiselect = {multiselect} />: <span>{data != null && data.breeds ? data.breeds.join(', ') : ''}</span>}
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Sex</label>
