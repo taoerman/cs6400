@@ -50,6 +50,7 @@ export const Dogdashboard = () => {
       <div className={styles["dashboard-header"]}>
         <h1 className={styles["page-title"]}>Dog Dashboard</h1>
         <div>
+        <button onClick={() => handleClick(5)} className={styles["primary-btn"]}>Add Adoption Application</button>
           <span >Dog Capacity: {capacity.remainingSpace}  </span>
           {capacity?.remainingSpace > 0 && <div className={styles["dashboard-actions"]}>
             <button onClick={() => handleClick(2)} className={styles["primary-btn"]}>Add New Dog</button>

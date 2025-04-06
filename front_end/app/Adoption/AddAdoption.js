@@ -11,6 +11,7 @@ export const AddAdoption = () => {
   const [screen, setScreen] = useState(1);
   const [fullData, setFullData] = useState([]);
   const [application, setApplication] = useState({});
+  const [adoptionFee, setAdoptionFee] = useState(0);
   const { dogId, dogName } = useView();
   useEffect(() => {
     if (keyword === "")
@@ -23,6 +24,11 @@ export const AddAdoption = () => {
   const handleChange = (e) => {
     setKeyword(e.target.value)
   }
+  useEffect(()=>{
+    fetch('http://127.0.0.1:8000/adoptions/get_adoption_fee_by_dogid/' + dogId)
+    .then((res)=>res.json())
+    .then((data)=>setAdoptionFee(data['adoptionFee']))
+  },[])
   useEffect(() => {
     async function loadData() {
       const res = await fetch('http://127.0.0.1:8000/adoptions/get_all_applications/');
@@ -44,15 +50,28 @@ export const AddAdoption = () => {
     setApplication(appData)
     setModalOpen(true)
   }
-  const handleSubmit = (id) => {
+  const handleSubmit = async (id) => {
     const body = {
       dogID: dogId,
       adopterId: id
     }
-    fetch('http://127.0.0.1:8080/adoptions/finalize_adoption/', {
-      method: 'POST',
-      body: JSON.stringify(body)
-    })
+    try {
+      const response = await fetch('http://127.0.0.1:8080/adoptions/finalize_adoption/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+    
+      if (!response.ok) {
+        const errorText = await response.text(); /
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+      alert('Adoption added!')
+    } catch (error) {
+      alert('add adoption failed at ' + error)
+    }
   }
   return (
     <main className={styles["main-content"]}>
@@ -196,7 +215,7 @@ export const AddAdoption = () => {
                 <div className={styles["form-grid"]}>
                   <div className={styles["form-group"]}>
                     <label>Adoption Fee</label>
-                    <div>TEST</div>
+                    <div>{adoptionFee}</div>
                   </div>
                 </div>
               </div>
