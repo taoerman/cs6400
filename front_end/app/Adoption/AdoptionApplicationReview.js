@@ -104,6 +104,7 @@ export const AdoptionApplicationReview = () => {
               <th>Adopter Name</th>
               <th>Adopter Email</th>
               <th>Adopter Phone</th>
+              <th>Date</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -116,6 +117,7 @@ export const AdoptionApplicationReview = () => {
                     <td>{item.adopterEmail}</td>
                     <td>{item.adopterPhoneNumber.replace(/\D/g, '')
                       .replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3')}</td>
+                    <td>{item.applicationDate}</td>
                     <td>
                       {item.isApproved === 0 && item.isRejected === 0 ? (
                         <>

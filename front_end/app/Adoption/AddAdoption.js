@@ -38,12 +38,17 @@ export const AddAdoption = () => {
     async function loadData() {
       const res = await fetch('http://127.0.0.1:8000/adoptions/get_all_applications/');
       const result = await res.json();
-      const data = result.applications.filter((item) => item.isApproved == 1)
+      const data = result.applications
+        .filter((item) => item.isApproved == 1);
       setFullData(data)
-      //remove duplicate
+
+      // keep the most recent record
       const map = new Map();
       data.forEach(item => {
-        map.set(item['adopterEmail'], item);
+        const email = item['adopterEmail'];
+        if (!map.has(email) || map.get(email) < item.applicationDate) {
+          map.set(email, item);
+        }
       });
       setData([...map.values()]);
     }
@@ -105,6 +110,7 @@ export const AddAdoption = () => {
               <th>Adopter Name</th>
               <th>Adopter Email</th>
               <th>Adopter Phone</th>
+              <th>Date</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -116,6 +122,7 @@ export const AddAdoption = () => {
                     <td>{item.adopterFirstName} {item.adopterLastName}</td>
                     <td>{item.adopterEmail}</td>
                     <td>{item.adopterPhoneNumber}</td>
+                    <td>{item.applicationDate}</td>
                     <td>
                       <button onClick={() => handleClick(item.adopterEmail)} className={styles["detail-link"]}>select</button>
                     </td>
@@ -127,6 +134,7 @@ export const AddAdoption = () => {
                     <td>{item.adopterFirstName} {item.adopterLastName}</td>
                     <td>{item.adopterEmail}</td>
                     <td>{item.adopterPhoneNumber}</td>
+                    <td>{item.applicationDate}</td>
                     <td>
                       <button onClick={() => handleClick(item.adopterEmail)} className={styles["detail-link"]}>select</button>
                     </td>
