@@ -72,9 +72,9 @@ export const AdoptionApplicationReview = () => {
           </thead>
           <tbody>
             {
-              filtered ? filteredData.map((item) => {
+              filtered ? filteredData.map((item, index) => {
                 return (
-                  <tr key={item.applicationID}>
+                  <tr key={index}>
                     <td>{item.adopterName}</td>
                     <td>{item.adopterEmail}</td>
                     <td>{item.phoneNumber.replace(/\D/g, '')
@@ -85,9 +85,9 @@ export const AdoptionApplicationReview = () => {
                     </td>
                   </tr>
                 )
-              }) : data.map((item) => {
+              }) : data.map((item, index) => {
                 return (
-                  <tr key={item.applicationID}>
+                  <tr key={index}>
                     <td>{item.adopterName}</td>
                     <td>{item.adopterEmail}</td>
                     <td>{item.phoneNumber.replace(/\D/g, '')
