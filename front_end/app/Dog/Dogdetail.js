@@ -20,7 +20,7 @@ export const DogDetail = () => {
         microchipVendor: data.microchipVendor ?? '', // drop-down list, single selection
     })
     const [breedType, setBreedType] = useState([])
-    const [multiselect, setMultiselect] = useState(true)
+    const [multiselect, setMultiselect] = useState(false)
     const loadData = async () => {
         const res = await getDataFromBackEnd('dogs/get_dog/' + dogId);
         const result = await res.json();
@@ -97,7 +97,7 @@ export const DogDetail = () => {
         })
         const body_breed = {
             dogID: dogId,
-            breedName: breeds
+            breed: breeds
         };
         const [res1, res2] = await Promise.all([
             postDataToBackEnd('dogs/edit_dog/' + dogId + '/', body),
@@ -182,7 +182,7 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Breed</label>
-                            {editing ? <DropdownSelect selected={editData.breeds} onChange={handleBreedChange} options={breedType} multiselect={multiselect} /> : <span>{data != null && data.breeds ? data.breeds.join(', ') : ''}</span>}
+                            {editing ? <DropdownSelect selected={editData.breeds} onChange={handleBreedChange} options={breedType} multiselect={multiselect} setMultiselect={setMultiselect} /> : <span>{data != null && data.breeds ? data.breeds.join(', ') : ''}</span>}
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Sex</label>

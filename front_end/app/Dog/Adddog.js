@@ -10,7 +10,7 @@ export const AddDog = () => {
     const [vendors, setVendors] = useState([]);
     const [breedsType, setBreedsType] = useState([]);
     const [multiselect, setMultiselect] = useState(true);
-    const [finalDate, setFinalDate] = useState();
+    const [finalDate, setFinalDate] = useState(new Date().toISOString().split('T')[0]);
     useEffect(() => {
         getDataFromBackEnd('dogs/get_vendors/')
             .then((data) => data.json())
@@ -54,9 +54,10 @@ export const AddDog = () => {
         }));
     };
     const handleBreedChange = (value) => {
+        const finalValue = Array.isArray(value) ? value : [value];
         setFormData((prevData) => ({
             ...prevData,
-            breed: value
+            breed: finalValue
         }));
     }
     const handleSubmit = async (event) => {
@@ -162,6 +163,13 @@ export const AddDog = () => {
                                 </option>
                                 {vendors.map((vendor, index) => <option key={index} value={vendor}>{vendor}</option>)}
                             </select>
+                        </div>
+                        <div className={styles["form-group"]}>
+                            <label htmlFor="description">Description</label>
+                            <textarea id="description" name="description" rows="4"
+                                value={formData.description}
+                                onChange={handleChange}
+                            ></textarea>
                         </div>
                     </div>
                 </div>

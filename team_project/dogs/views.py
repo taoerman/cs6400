@@ -161,7 +161,6 @@ def add_dog(request):
             """)
             enum_data = cursor.fetchone()[0]
             allowed_breeds = enum_data.replace("enum(", "").replace(")", "").replace("'", "").split(",")
-            print(breed)
             # Insert into Breeds table
             for breed in breed_list:
                 if breed not in allowed_breeds:
@@ -217,7 +216,8 @@ def edit_dog(request, dog_id):
         # if not user_email:
         #     return JsonResponse({'error': 'User not logged in'}, status=403)
 
-        data = json.loads(request.body)
+        data = json.loads(request.body.decode('utf-8'))
+        print(data)
         user_email = data.get('user_email')
         is_exec = data.get('is_exec')
 
