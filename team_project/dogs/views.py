@@ -399,10 +399,10 @@ def save_breed(request):
     try:
         data = json.loads(request.body)
         dogID = data.get('dogID')
-        breed = data.get('breedName')
+        breed_list = data.get('breed')
 
-        if not dogID or not breed:
-            return JsonResponse({'error': 'Missing dogID or breedName'}, status=400)
+        if not dogID or not isinstance(breed_list, list) or not breed_list:
+            return JsonResponse({'error': 'breed must be a non-empty list and dogID is required.'}, status=400)
 
         with connection.cursor() as cursor:
             # Check if dog exists
@@ -410,7 +410,7 @@ def save_breed(request):
             if not cursor.fetchone():
                 return JsonResponse({'error': 'Dog not found'}, status=404)
 
-            # Check valid ENUM value
+            # Get allowed ENUM values
             cursor.execute("""
                 SELECT COLUMN_TYPE
                 FROM INFORMATION_SCHEMA.COLUMNS
@@ -420,28 +420,30 @@ def save_breed(request):
             enum_data = cursor.fetchone()[0]
             allowed_breeds = enum_data.replace("enum(", "").replace(")", "").replace("'", "").split(",")
 
-            if breed not in allowed_breeds:
-                return JsonResponse({'error': f'Invalid breed: {breed}'}, status=400)
+            # Validate all breeds
+            for breed in breed_list:
+                if breed not in allowed_breeds:
+                    return JsonResponse({'error': f"Invalid breed: {breed}"}, status=400)
 
-            # Check existing breed for dog
+            # Check current breeds for the dog
             cursor.execute("SELECT breedName FROM Breeds WHERE dogID = %s", [dogID])
-            existing = cursor.fetchone()
+            existing_breeds = [r[0] for r in cursor.fetchall()]
 
-            if existing and existing[0] not in ['Mixed', 'Unknown']:
-                return JsonResponse({'error': 'Breed already set and cannot be edited unless Mixed or Unknown'}, status=403)
+            if existing_breeds and not all(breed in ['Mixed', 'Unknown'] for breed in existing_breeds):
+                return JsonResponse({'error': 'Breeds already set and cannot be edited unless all are Mixed or Unknown'}, status=403)
 
-            # Replace existing breed
+            # Replace existing breeds
             cursor.execute("DELETE FROM Breeds WHERE dogID = %s", [dogID])
-            cursor.execute("""
-                INSERT INTO Breeds (dogID, breedName)
-                VALUES (%s, %s)
-            """, [dogID, breed])
+            for breed in breed_list:
+                cursor.execute("""
+                    INSERT INTO Breeds (dogID, breedName)
+                    VALUES (%s, %s)
+                """, [dogID, breed])
 
-        return JsonResponse({'message': 'Breed saved successfully'}, status=201)
+        return JsonResponse({'message': 'Breeds saved successfully'}, status=201)
 
     except Exception as e:
         return HttpResponseBadRequest(f"Error: {str(e)}")
-
 # {
 #   "dogID": 2,
 #   "breedName": "Australian Shepherd"
