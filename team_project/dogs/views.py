@@ -212,22 +212,14 @@ def edit_dog(request, dog_id):
         return JsonResponse({'error' : 'Only POST Allowed'}, status=405)
 
     try:
-        # Get user info from session
-        # user_email = request.session.get('user_email')
-        # is_exec = request.session.get('is_exec')
-
-        # if not user_email:
-        #     return JsonResponse({'error': 'User not logged in'}, status=403)
-
-        data = json.loads(request.body.decode('utf-8'))
-        print(data)
+        data = json.loads(json.loads(request.body.decode('utf-8')))
         user_email = data.get('user_email')
         is_exec = data.get('is_exec')
 
         new_sex = data.get('sex')
         new_altered = data.get('altered')
-        new_microchip = data.get('microchipID')
-        new_microchip_vendor = data.get('microchipVendor')
+        new_microchip = data.get('microchipID') or None
+        new_microchip_vendor = data.get('microchipVendor') or None
 
         # Validate microchip ID and vendor dependencies
         if (new_microchip and not new_microchip_vendor) or (new_microchip_vendor and not new_microchip):

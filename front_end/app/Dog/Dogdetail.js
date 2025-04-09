@@ -107,6 +107,7 @@ export const DogDetail = () => {
         if (res1.ok && res2.ok) {
             loadData()
         } else {
+            alert(errorRes1);
             throw new Error("Save dog failed!");
         }
     }
