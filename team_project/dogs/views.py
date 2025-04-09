@@ -200,8 +200,8 @@ def get_dog_by_id(request, dog_id):
 
 @csrf_exempt
 def edit_dog(request, dog_id):
-    if request.method != 'PUT':
-        return JsonResponse({'error' : 'Only PUT Allowed'}, status=405)
+    if request.method != 'POST':
+        return JsonResponse({'error' : 'Only POST Allowed'}, status=405)
 
     try:
         # Get user info from session
