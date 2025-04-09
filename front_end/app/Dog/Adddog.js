@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
 import { DropdownSelect } from '@/app/Common/Dropdown'
-import { getDataFromBackEnd, postDataToBackEnd } from "./../utils";
+import { getCookie, getDataFromBackEnd, postDataToBackEnd } from "./../utils";
 
 
 export const AddDog = () => {
@@ -69,6 +69,7 @@ export const AddDog = () => {
             surrenderedByAnimalControl: formData.surrenderType === "animalControl",
             surrenderPhone: formData.surrendererPhone || null,
             description: formData.description.trim(),
+            user_email: getCookie('userEmail'),
         };
 
         try {
@@ -100,6 +101,7 @@ export const AddDog = () => {
                             <input type="text" id="name" name="name"
                                 value={formData.name}
                                 onChange={handleChange}
+                                required
                             />
                         </div>
                         <div className={styles["form-group"]}>
