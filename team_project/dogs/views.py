@@ -229,6 +229,10 @@ def edit_dog(request, dog_id):
         new_microchip = data.get('microchipID')
         new_microchip_vendor = data.get('microchipVendor')
 
+        # Validate microchip ID and vendor dependencies
+        if (new_microchip and not new_microchip_vendor) or (new_microchip_vendor and not new_microchip):
+            return JsonResponse({'error': 'microchipID and microchipVendor must be provided together.'}, status=400)
+
         if new_sex not in ['Male', 'Female', 'Unknown']:
             return JsonResponse({'error' : 'Invalid Syntax value'}, status=400)
 
