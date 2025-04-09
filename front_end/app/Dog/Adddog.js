@@ -27,7 +27,7 @@ export const AddDog = () => {
     };
     const [formData, setFormData] = useState({
         name: "",
-        breed: "",
+        breed: [],
         age: "",
         sex: "",
         weight: "",
@@ -57,7 +57,6 @@ export const AddDog = () => {
     }
     const handleSubmit = async (event) => {
         event.preventDefault();
-
         const formattedData = {
             name: formData.name,
             breed: formData.breed,
@@ -159,12 +158,11 @@ export const AddDog = () => {
                             <select id="microchipVendor" name="microchipVendor"
                                 value={formData.microchipVendor}
                                 onChange={handleChange} >
+                                <option value="" disabled hidden>
+                                    Please select vendor
+                                </option>
                                 {vendors.map((vendor, index) => <option key={index} value={vendor}>{vendor}</option>)}
                             </select>
-                        </div>
-                        <div className={styles["form-group full-width"]}>
-                            <label htmlFor="medicalHistory">Medical History</label>
-                            <textarea id="medicalHistory" name="medicalHistory" rows="4"></textarea>
                         </div>
                     </div>
                 </div>
@@ -197,35 +195,6 @@ export const AddDog = () => {
                                 onChange={handleChange}
                                 pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
                                 placeholder="123-456-7890" />
-                        </div>
-                        <div id="animalControlFields" className={styles["form-group full-width"]}>
-                            <label htmlFor="animalControlInfo">Animal Control Information</label>
-                            <textarea id="animalControlInfo" name="animalControlInfo"
-                                rows="3"
-                                placeholder="Enter animal control officer name, badge number, and additional details"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <div className={styles["form-section"]}>
-                    <h2>Additional Information</h2>
-                    <div className={styles["form-grid"]}>
-                        <div className={styles["form-group full-width"]}>
-                            <label htmlFor="description">Description</label>
-                            <textarea id="description" name="description" rows="4"
-                                value={formData.description}
-                                onChange={handleChange}
-
-                            ></textarea>
-                        </div>
-                        <div className={styles["form-group"]}>
-                            <label htmlFor="status">Status</label>
-                            <select id="status" name="status" >
-                                <option value="">Select Status</option>
-                                <option value="available">Available</option>
-                                <option value="pending">Adoption Pending</option>
-                                <option value="adopted">Adopted</option>
-                            </select>
                         </div>
                     </div>
                 </div>

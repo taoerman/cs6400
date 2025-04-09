@@ -95,6 +95,7 @@ def add_dog(request):
         #     return JsonResponse({'error': 'User not authenticated'}, status=403)
 
         data = json.loads(request.body)
+        print(data)
 
         # Extract fields
         name = data['name']
