@@ -2,17 +2,23 @@ import React, { useState, useEffect, useMemo } from "react";
 import styles from "@/app/styles.module.css"
 import { useView } from '@/contexts/ViewContext';
 import { DropdownSelect } from '@/app/Common/Dropdown'
-import { getDataFromBackEnd, postDataToBackEnd, getDollarAmountFormat } from "./../utils";
+import { getDataFromBackEnd, postDataToBackEnd, getDollarAmountFormat, getCookie } from "./../utils";
 
 
 export const DogDetail = () => {
     const { setCurrentView, currentView, dogId, setDogId } = useView();
-    const [data, setData] = useState();
+    const [data, setData] = useState({});
     const [expensesData, setExpensesData] = useState({
         expenses: []
     });
+    const [vendors, setVendors] = useState([]);
     const [editing, setEditing] = useState(false)
-    const [editData, setEditData] = useState({})
+    const [editData, setEditData] = useState({
+        altered: data.altered ?? '',
+        sex: data.sex ?? '',
+        microchipID: data.microchipID ?? '',
+        microchipVendor: data.microchipVendor ?? '', // drop-down list, single selection
+    })
     const [breedType, setBreedType] = useState([])
     const [multiselect, setMultiselect] = useState(true)
     const loadData = async () => {
@@ -24,16 +30,20 @@ export const DogDetail = () => {
         const expdata = await exp.json();
         setExpensesData(expdata);
         const tempData = {
-            sex: result.sex,
-            microchipID: result.microchipID,
-            altered: result.altered,
-            breeds: result.breeds
+            sex: result.sex ?? '',
+            microchipID: result.microchipID ?? '',
+            microchipVendor: result.microchipVendor ?? '',
+            altered: result.altered ?? '',
+            breeds: result.breeds ?? [],
         };
         setEditData(tempData);
-        loadData();
     };
     useEffect(() => {
-        //fetch breed type
+        getDataFromBackEnd('dogs/get_vendors/')
+            .then((data) => data.json())
+            .then((data) => {
+                setVendors(data['vendors']);
+            })
         getDataFromBackEnd('dogs/get_breeds/')
             .then((data) => data.json())
             .then((data) => {
@@ -64,13 +74,25 @@ export const DogDetail = () => {
         training: "Training"
     };
 
-
     useEffect(() => {
         loadData();
     }, [dogId]);
+
+    const handleVendorChange = (event) => {
+        const { name, value } = event.target;
+        setEditData((prevData) => ({
+            ...prevData,
+            [name]: value
+        }));
+    };
+
     const handleSave = async () => {
         const { breeds, ...dataWithoutBreed } = editData;
-        const body = JSON.stringify(dataWithoutBreed)
+        const body = JSON.stringify({
+            ...dataWithoutBreed,
+            is_exec: getCookie('loginType') === 3,
+            user_email: getCookie('userEmail'),
+        })
         const body_breed = JSON.stringify(breeds)
         const [res1, res2] = await Promise.all([
             postDataToBackEnd('dogs/edit_dog/' + dogId + '/', body),
@@ -83,6 +105,9 @@ export const DogDetail = () => {
             throw new Error("Save dog failed!");
         }
     }
+    const handleMicrochipIDChange = (e) => {
+        setEditData({ ...editData, microchipID: e.target.value });
+    };
     const handleInput = (e, type) => {
         const keyMap = {
             sex: 'sex',
@@ -110,10 +135,11 @@ export const DogDetail = () => {
     const handleEdit = () => {
         //reset edit data
         const tempData = {
-            sex: data.sex,
-            microchipID: data.microchipID,
+            altered: data.altered ?? '',
+            sex: data.sex ?? '',
+            microchipID: data.microchipID ?? '',
+            microchipVendor: data.microchipVendor ?? '',
             breeds: data.breeds,
-            altered: data.altered,
         };
         setEditData(tempData);
         setEditing(!editing)
@@ -155,7 +181,20 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Sex</label>
-                            {editing ? (data?.sex === 'Male' ? <input className="outline-solid" type='text' value={editData.sex} onChange={(e) => handleInput(e, 'sex')} /> : <span className="outline-solid">{data != null ? data.sex : ""}</span>) : <span>{data != null ? data.sex : ""}</span>}
+                            {editing && data.sex === 'Unknown'
+                                ? (<select id="sex" name="sex"
+                                    value={editData.sex}
+                                    onChange={handleChange} >
+                                    <option value="" disabled hidden>
+                                        Select Gender
+                                    </option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="female">Unknown</option>
+                                </select>)
+                                : (<span >
+                                    {data.sex}
+                                </span>)}
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Age</label>
@@ -163,7 +202,16 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Altered</label>
-                            {editing ? (data.altered === false ? <input className="outline-solid" value={editData.altered} onChange={(e) => handleInput(e, 'altered')} /> : <span className="outline-solid">{data != null ? (data.altered ? 'Yes' : 'No') : 'Unknown'}</span>) : <span>{data != null ? (data.altered ? 'Yes' : 'No') : 'Unknown'}</span>}
+                            {
+                                editing && data.altered === 0
+                                    ? (<select
+                                        value={editData.altered}
+                                        onChange={(e) => handleInput(e, 'altered')}>
+                                        <option value={0}>No</option>
+                                        <option value={1}>Yes</option>
+                                    </select>)
+                                    : (<span>{data.altered === 1 ? "Yes" : "No"}</span>)
+                            }
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Adoptable</label>
@@ -179,7 +227,37 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Microchip ID</label>
-                            {editing ? (data?.microchipID === null ? <input className="outline-solid" type='text' value={editData.microchipID} onChange={(e) => handleInput(e, 'chip')} /> : <span className="outline-solid">{data != null ? data.microchipID : ""}</span>) : <span>{data != null ? data.microchipID : ""}</span>}
+                            {editing && data.microchipID == null
+                                ? (<input
+                                    className="outline-solid"
+                                    type='text'
+                                    value={editData.microchipID}
+                                    onChange={handleMicrochipIDChange}
+                                />)
+                                : (<span>
+                                    {data != null ? data.microchipID : ""}
+                                </span>
+                                )}
+                        </div>
+                        <div className={styles["detail-item"]}>
+                            <label>Microchip Vendor</label>
+                            {editing && data.microchipID == null
+                                ? (<select id="microchipVendor" name="microchipVendor"
+                                    defaultValue=""
+                                    // value={editData.microchipVendor}
+                                    // required={editData.microchipID !== ''}
+                                    onChange={handleVendorChange} >
+                                    <option value="" disabled hidden>
+                                        Please select vendor
+                                    </option>
+                                    {vendors.map((vendor, index) =>
+                                        <option key={index} value={vendor}>
+                                            {vendor}
+                                        </option>)}
+                                </select>)
+                                : (<span>
+                                    {data != null ? data.microchipVendor : ""}
+                                </span>)}
                         </div>
                     </div>
                 </div>
