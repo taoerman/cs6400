@@ -97,7 +97,7 @@ def add_dog(request):
 
         # Extract fields
         name = data['name']
-        breed = data['breed']
+        breed_list = data['breed']
         sex = data.get('sex', 'Unknown').capitalize()
         altered = 1 if data['altered'] else 0
         age = data['ageForMonths']
@@ -153,10 +153,14 @@ def add_dog(request):
                 return JsonResponse({'error': f"'{breed}' is not a valid breed."}, status=400)
 
             # Insert into Breeds table
-            cursor.execute("""
-                INSERT INTO Breeds (dogID, breedName)
-                VALUES (%s, %s)
-            """, [dog_id, breed])
+            for breed in breed_list:
+                if breed not in allowed_breeds:
+                    return JsonResponse({'error': f"'{breed}' is not a valid breed."}, status=400)
+
+                cursor.execute("""
+                               INSERT INTO Breeds (dogID, breedName)
+                               VALUES (%s, %s)
+                           """, [dog_id, breed])
 
         return JsonResponse({'message': 'Dog added successfully!'}, status=201)
 
