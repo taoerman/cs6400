@@ -2,6 +2,7 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.db import connection
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from datetime import date
 import json
 
 def get_current_shelter_status():
@@ -89,9 +90,9 @@ def add_dog(request):
 
     try:
         # Get user_email from session
-        user_email = request.session.get('user_email')
-        if not user_email:
-            return JsonResponse({'error': 'User not authenticated'}, status=403)
+        # user_email = request.session.get('user_email')
+        # if not user_email:
+        #     return JsonResponse({'error': 'User not authenticated'}, status=403)
 
         data = json.loads(request.body)
 
@@ -106,6 +107,7 @@ def add_dog(request):
         microchip_id = data.get('microchipID')
         microchip_vendor = data.get('microchipVendor')
         description = data.get('description', '')
+        user_email = data.get('user_email')
 
         # Check required phone number
         if surrendered_by_control and not surrender_phone:
@@ -197,45 +199,49 @@ def edit_dog(request, dog_id):
 
     try:
         # Get user info from session
-        user_email = request.session.get('user_email')
-        is_exec = request.session.get('is_exec')
+        # user_email = request.session.get('user_email')
+        # is_exec = request.session.get('is_exec')
 
-        if not user_email:
-            return JsonResponse({'error': 'User not logged in'}, status=403)
+        # if not user_email:
+        #     return JsonResponse({'error': 'User not logged in'}, status=403)
 
-        data = json.loads((request.body))
+        data = json.loads(request.body)
+        user_email = data.get('user_email')
+        is_exec = data.get('is_exec')
+
         new_sex = data.get('sex')
-        # new_breed = json.dumps(data.get('breed'))
+        new_altered = data.get('altered')
         new_microchip = data.get('microchipID')
+        new_microchip_vendor = data.get('microchipVendor')
 
         if new_sex not in ['Male', 'Female', 'Unknown']:
             return JsonResponse({'error' : 'Invalid Syntax value'}, status=400)
 
-            # If not ED, check age before allowing microchipID change
-            if not is_exec and new_microchip:
-                with connection.cursor() as cursor:
-                    cursor.execute("""
-                            SELECT birthDate FROM User WHERE userEmail = %s
-                        """, [user_email])
-                    row = cursor.fetchone()
+        # If not ED, check age before allowing microchipID change
+        if not is_exec and new_microchip:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                        SELECT birthDate FROM User WHERE userEmail = %s
+                    """, [user_email])
+                row = cursor.fetchone()
 
-                    if not row:
-                        return JsonResponse({'error': 'User not found'}, status=404)
+                if not row:
+                    return JsonResponse({'error': 'User not found'}, status=404)
 
-                    birth_date = row[0]
-                    today = date.today()
-                    age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+                birth_date = row[0]
+                today = date.today()
+                age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
 
-                    if age < 18:
-                        return JsonResponse({'error': 'Only users 18+ can update microchipID'}, status=403)
+                if age < 18:
+                    return JsonResponse({'error': 'Only users 18+ can update microchipID'}, status=403)
 
 
         with connection.cursor() as cursor:
             cursor.execute("""
                 UPDATE Dog
-                SET sex = %s, microchipID = %s
+                SET sex = %s, altered = %s, microchipID = %s, microchipVendor = %s
                 WHERE id = %s
-            """, [new_sex, new_microchip, dog_id])
+            """, [new_sex, new_altered, new_microchip, new_microchip_vendor, dog_id])
 
         return JsonResponse({'message' : 'Dog updated successfully'})
 
