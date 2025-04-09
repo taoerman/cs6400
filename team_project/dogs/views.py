@@ -110,6 +110,10 @@ def add_dog(request):
         description = data.get('description', '')
         user_email = data.get('user_email')
 
+        # Validate microchip ID and vendor dependencies
+        if (microchip_id and not microchip_vendor) or (microchip_vendor and not microchip_id):
+            return JsonResponse({'error': 'microchipID and microchipVendor must be provided together.'}, status=400)
+
         # Check required phone number
         if surrendered_by_control and not surrender_phone:
             return JsonResponse({'error': 'surrenderPhone is required when surrenderedByAnimalControl is true'}, status=400)
@@ -196,8 +200,8 @@ def get_dog_by_id(request, dog_id):
 
 @csrf_exempt
 def edit_dog(request, dog_id):
-    if request.method != 'PUT':
-        return JsonResponse({'error' : 'Only PUT Allowed'}, status=405)
+    if request.method != 'POST':
+        return JsonResponse({'error' : 'Only POST Allowed'}, status=405)
 
     try:
         # Get user info from session
