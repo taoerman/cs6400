@@ -51,6 +51,8 @@ export const DogDetail = () => {
             })
     }, [])
 
+    console.log(data);
+
     const { categoryTotals, grandTotal } = useMemo(() => {
         const totals = {};
         let grandTotal = 0;
@@ -93,7 +95,10 @@ export const DogDetail = () => {
             is_exec: getCookie('loginType') === 3,
             user_email: getCookie('userEmail'),
         })
-        const body_breed = JSON.stringify(breeds)
+        const body_breed = {
+            dogID: dogId,
+            breedName: breeds
+        };
         const [res1, res2] = await Promise.all([
             postDataToBackEnd('dogs/edit_dog/' + dogId + '/', body),
             postDataToBackEnd('dogs/save_breed/', body_breed)
@@ -124,9 +129,9 @@ export const DogDetail = () => {
     }
     const handleBreedChange = (value) => {
         if (value.includes('Unknown'))
-            value = 'Unknown'
+            value = ['Unknown']
         else if (value.includes('Mixed'))
-            value = 'Mixed'
+            value = ['Mixed']
         setEditData((prevData) => ({
             ...prevData,
             breeds: value

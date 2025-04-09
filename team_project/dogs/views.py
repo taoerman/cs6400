@@ -2,7 +2,7 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.db import connection
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-from datetime import date
+from datetime import date, datetime
 import json
 
 def get_current_shelter_status():
@@ -161,7 +161,7 @@ def add_dog(request):
             """)
             enum_data = cursor.fetchone()[0]
             allowed_breeds = enum_data.replace("enum(", "").replace(")", "").replace("'", "").split(",")
-
+            print(breed)
             # Insert into Breeds table
             for breed in breed_list:
                 if breed not in allowed_breeds:

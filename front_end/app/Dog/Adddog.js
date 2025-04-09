@@ -9,7 +9,8 @@ export const AddDog = () => {
     const { setCurrentView, currentView } = useView();
     const [vendors, setVendors] = useState([]);
     const [breedsType, setBreedsType] = useState([]);
-    const [multiselect, setMultiselect] = useState(true)
+    const [multiselect, setMultiselect] = useState(true);
+    const [finalDate, setFinalDate] = useState();
     useEffect(() => {
         getDataFromBackEnd('dogs/get_vendors/')
             .then((data) => data.json())
@@ -25,6 +26,9 @@ export const AddDog = () => {
     const handleClick = (num) => {
         setCurrentView(num)
     };
+    const handleDateInput = (e) => {
+        setFinalDate(e.target.value)
+    }
     const [formData, setFormData] = useState({
         name: "",
         breed: [],
@@ -35,7 +39,7 @@ export const AddDog = () => {
         microchip: "",
         microchipVendor: "",
         medicalHistory: "",
-        surrenderDate: "",
+        surrenderDate: new Date().toISOString().split('T')[0],
         surrenderType: "",
         surrendererPhone: "",
         animalControlInfo: "",
@@ -65,6 +69,7 @@ export const AddDog = () => {
             altered: formData.altered === "yes",
             microchipID: formData.microchip || null,
             microchipVendor: formData.microchipVendor || null,
+            surrenderDate: finalDate,
             surrenderedByAnimalControl: formData.surrenderType === "animalControl",
             surrenderPhone: formData.surrendererPhone || null,
             description: formData.description.trim(),
@@ -167,8 +172,8 @@ export const AddDog = () => {
                         <div className={styles["form-group"]}>
                             <label htmlFor="surrenderDate">Surrender Date</label>
                             <input type="date" id="surrenderDate" name="surrenderDate"
-                                value={formData.surrenderDate}
-                                onChange={handleChange}
+                                value={finalDate}
+                                onChange={(e) => handleDateInput(e)}
                             />
                         </div>
                         <div className={styles["form-group"]}>
