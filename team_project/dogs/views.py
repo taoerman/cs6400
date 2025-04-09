@@ -111,6 +111,9 @@ def add_dog(request):
         user_email = data.get('user_email')
         surrender_date_str = data.get('surrenderDate')
 
+        if not breed_list:
+            return JsonResponse({'error': 'Breed list cannot be empty.'}, status=400)
+
         try:
             surrender_date = datetime.strptime(surrender_date_str, "%Y-%m-%d").date() if surrender_date_str else None
         except ValueError:
@@ -225,6 +228,10 @@ def edit_dog(request, dog_id):
         new_altered = data.get('altered')
         new_microchip = data.get('microchipID')
         new_microchip_vendor = data.get('microchipVendor')
+
+        # Validate microchip ID and vendor dependencies
+        if (new_microchip and not new_microchip_vendor) or (new_microchip_vendor and not new_microchip):
+            return JsonResponse({'error': 'microchipID and microchipVendor must be provided together.'}, status=400)
 
         if new_sex not in ['Male', 'Female', 'Unknown']:
             return JsonResponse({'error' : 'Invalid Syntax value'}, status=400)
