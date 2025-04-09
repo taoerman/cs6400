@@ -99,16 +99,19 @@ export const DogDetail = () => {
             dogID: dogId,
             breed: breeds
         };
+        const shouldSaveBreed = breeds.some(breed => breed !== "Unknown" || breed !== "Mixed");
         const [res1, res2] = await Promise.all([
             postDataToBackEnd('dogs/edit_dog/' + dogId + '/', body),
-            postDataToBackEnd('dogs/save_breed/', body_breed)
-        ])
+            shouldSaveBreed ? postDataToBackEnd('dogs/save_breed/', body_breed) : Promise.resolve({ ok: true })
+        ]);
         //if success, reload dog data
         if (res1.ok && res2.ok) {
             loadData()
         } else {
-            alert(errorRes1);
-            throw new Error("Save dog failed!");
+            const errorRes1 = res1.ok ? "" : await res1.text();
+            const errorRes2 = res2.ok ? "" : await res2.text();
+
+            alert(errorRes1 + errorRes2);
         }
     }
     const handleMicrochipIDChange = (e) => {
@@ -153,6 +156,15 @@ export const DogDetail = () => {
     const handleClick = (num) => {
         setCurrentView(num)
     }
+    const checkBreedType = (data) => {
+        if (data == null || !Array.isArray(data.breeds)) return false;
+        for (let breed of data.breeds) {
+            if (breed === "Unknown" || breed === "Mixed") {
+                return true;
+            }
+        }
+        return false;
+    }
     const checkAdoptable = (data) => {
         if (data == null) return '';
         if (!data.is_adopted && data.altered && data.microchipID != null)
@@ -183,7 +195,7 @@ export const DogDetail = () => {
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Breed</label>
-                            {editing ? <DropdownSelect selected={editData.breeds} onChange={handleBreedChange} options={breedType} multiselect={multiselect} setMultiselect={setMultiselect} /> : <span>{data != null && data.breeds ? data.breeds.join(', ') : ''}</span>}
+                            {editing && checkBreedType(data) ? <DropdownSelect selected={editData.breeds} onChange={handleBreedChange} options={breedType} multiselect={multiselect} setMultiselect={setMultiselect} /> : <span>{data != null && data.breeds ? data.breeds.join(', ') : ''}</span>}
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Sex</label>
