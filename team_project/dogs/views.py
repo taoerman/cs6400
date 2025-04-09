@@ -149,9 +149,6 @@ def add_dog(request):
             enum_data = cursor.fetchone()[0]
             allowed_breeds = enum_data.replace("enum(", "").replace(")", "").replace("'", "").split(",")
 
-            if breed not in allowed_breeds:
-                return JsonResponse({'error': f"'{breed}' is not a valid breed."}, status=400)
-
             # Insert into Breeds table
             for breed in breed_list:
                 if breed not in allowed_breeds:
