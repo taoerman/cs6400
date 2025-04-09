@@ -352,13 +352,19 @@ export const DogDetail = () => {
                             <button onClick={() => handleSave()} className={styles["secondary-btn"]}>
                                 Save
                             </button>
-                            <button onClick={() => handleClick(4)} className={styles["secondary-btn"]}>
-                                Add Expense
-                            </button>
+                            {getCookie('isAdult') === 'true' && (
+                                <button onClick={() => handleClick(4)}
+                                    className={styles["secondary-btn"]}>
+                                    Add Expense
+                                </button>
+                            )
+                            }
                         </>
                     )}
-                    {checkAdoptable(data) === 'Yes' && (
-                        <button onClick={() => handleClick(10)} className={styles["primary-btn"]}>
+                    {checkAdoptable(data) === 'Yes' && getCookie('loginType') === 3 && (
+                        <button onClick={() => handleClick(10)}
+                            className={styles["primary-btn"]}
+                        >
                             Add Adoption
                         </button>
                     )}

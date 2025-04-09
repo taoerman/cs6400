@@ -131,6 +131,7 @@ export const Dogdashboard = () => {
                             setDogId(dog.id);
                           }}
                           disabled={!isUserAdult}
+                          title={!isUserAdult ? "Must be over 18 to add expense" : ""}
                           className={`
                           ${styles["detail-link"]}
                           ${!isUserAdult ? styles['under18'] : ""}
