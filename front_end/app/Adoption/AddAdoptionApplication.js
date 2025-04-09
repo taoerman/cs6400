@@ -76,19 +76,19 @@ export const Adoption = () => {
             <h2>Adopter Information</h2>
             <div className={styles["form-grid"]}>
               <div className={styles["form-group"]}>
-                <label htmlFor="firstName">First Name*</label>
+                <label htmlFor="firstName">First Name</label>
                 <input type="text" id="firstName" name="firstName" onChange={handleChange} required />
               </div>
               <div className={styles["form-group"]}>
-                <label htmlFor="lastName">Last Name*</label>
+                <label htmlFor="lastName">Last Name</label>
                 <input type="text" id="lastName" name="lastName" onChange={handleChange} required />
               </div>
               <div className={styles["form-group"]}>
-                <label htmlFor="email">Email*</label>
+                <label htmlFor="email">Email</label>
                 <input type="adopterEmail" id="adopterEmail" name="adopterEmail" onChange={handleChange} required />
               </div>
               <div className={styles["form-group"]}>
-                <label htmlFor="phone">Phone Number*</label>
+                <label htmlFor="phone">Phone Number</label>
                 <input
                   type="tel"
                   id="phoneNumber"
@@ -106,15 +106,15 @@ export const Adoption = () => {
             <h2>Address</h2>
             <div className={styles["form-grid"]}>
               <div className={`${styles["form-group"]} ${styles["full-width"]}`}>
-                <label htmlFor="street">Street Address*</label>
+                <label htmlFor="street">Street Address</label>
                 <input type="text" id="street" name="street" onChange={handleChange} required />
               </div>
               <div className={styles["form-group"]}>
-                <label htmlFor="city">City*</label>
+                <label htmlFor="city">City</label>
                 <input type="text" id="city" name="city" onChange={handleChange} required />
               </div>
               <div className={styles["form-group"]}>
-                <label htmlFor="state">State*</label>
+                <label htmlFor="state">State</label>
                 <select id="state" name="state" onChange={handleChange} required>
                   <option value="">Select State</option>
                   <option value="AL">Alabama</option>
@@ -123,7 +123,7 @@ export const Adoption = () => {
                 </select>
               </div>
               <div className={styles["form-group"]}>
-                <label htmlFor="zipCode">ZIP Code*</label>
+                <label htmlFor="zipCode">ZIP Code</label>
                 <input
                   type="text"
                   id="zipCode"

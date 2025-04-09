@@ -91,12 +91,12 @@ export const AddDog = () => {
                 <h1>Add New Dog</h1>
             </div>
 
-            <div id="addDogForm" className={styles["add-dog-form"]}>
+            <form id="addDogForm" className={styles["add-dog-form"]} onSubmit={handleSubmit}>
                 <div className={styles["form-section"]}>
                     <h2>Basic Information</h2>
                     <div className={styles["form-grid"]}>
                         <div className={styles["form-group"]}>
-                            <label htmlFor="name">Dog Name</label>
+                            <label htmlFor="name" className="required">Dog Name</label>
                             <input type="text" id="name" name="name"
                                 value={formData.name}
                                 onChange={handleChange}
@@ -117,7 +117,8 @@ export const AddDog = () => {
                             <label htmlFor="sex">Gender</label>
                             <select id="sex" name="sex"
                                 value={formData.sex}
-                                onChange={handleChange} >
+                                onChange={handleChange}
+                                required>
                                 <option value="">Select Gender</option>
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
@@ -129,13 +130,6 @@ export const AddDog = () => {
                 <div className={styles["form-section"]}>
                     <h2>Health Information</h2>
                     <div className={styles["form-grid"]}>
-                        <div className={styles["form-group"]}>
-                            <label htmlFor="weight">Weight (lbs)</label>
-                            <input type="number" id="weight" name="weight"
-                                value={formData.weight}
-                                onChange={handleChange}
-                            />
-                        </div>
                         <div className={styles["form-group"]}>
                             <label htmlFor="altered">Altered</label>
                             <select id="altered" name="altered"
@@ -201,9 +195,9 @@ export const AddDog = () => {
 
                 <div className={styles["form-actions"]}>
                     <button type="button" className={styles["secondary-btn"]} onClick={() => setCurrentView(1)}>Cancel</button>
-                    <button type="button" onClick={(e) => handleSubmit(e)} className={styles["primary-btn"]}>Submit</button>
+                    <button type="submit" className={styles["primary-btn"]}>Submit</button>
                 </div>
-            </div>
+            </form>
         </main>
     )
 }
