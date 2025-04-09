@@ -110,6 +110,10 @@ def add_dog(request):
         description = data.get('description', '')
         user_email = data.get('user_email')
 
+        # Validate microchip ID and vendor dependencies
+        if (microchip_id and not microchip_vendor) or (microchip_vendor and not microchip_id):
+            return JsonResponse({'error': 'microchipID and microchipVendor must be provided together.'}, status=400)
+
         # Check required phone number
         if surrendered_by_control and not surrender_phone:
             return JsonResponse({'error': 'surrenderPhone is required when surrenderedByAnimalControl is true'}, status=400)
