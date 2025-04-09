@@ -114,7 +114,7 @@ def add_dog(request):
             return JsonResponse({'error': 'surrenderPhone is required when surrenderedByAnimalControl is true'}, status=400)
 
         # Bulldog + Uga restriction
-        if 'bulldog' in breed.lower() and name.strip().lower() == 'uga':
+        if any("bulldog" in b.lower() for b in breed_list) and name.strip().lower() == 'uga':
             return JsonResponse({'error': 'Bulldogs named Uga are not allowed. You must change to another name'}, status=400)
 
         # Check shelter capacity
