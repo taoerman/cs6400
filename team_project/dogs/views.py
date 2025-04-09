@@ -111,6 +111,9 @@ def add_dog(request):
         user_email = data.get('user_email')
         surrender_date_str = data.get('surrenderDate')
 
+        if not breed_list:
+            return JsonResponse({'error': 'Breed list cannot be empty.'}, status=400)
+
         try:
             surrender_date = datetime.strptime(surrender_date_str, "%Y-%m-%d").date() if surrender_date_str else None
         except ValueError:
