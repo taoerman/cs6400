@@ -109,6 +109,12 @@ def add_dog(request):
         microchip_vendor = data.get('microchipVendor')
         description = data.get('description', '')
         user_email = data.get('user_email')
+        surrender_date_str = data.get('surrenderDate')
+
+        try:
+            surrender_date = datetime.strptime(surrender_date_str, "%Y-%m-%d").date() if surrender_date_str else None
+        except ValueError:
+            return JsonResponse({'error': 'Invalid surrenderDate format. Expected YYYY-MM-DD'}, status=400)
 
         # Validate microchip ID and vendor dependencies
         if (microchip_id and not microchip_vendor) or (microchip_vendor and not microchip_id):
@@ -139,10 +145,10 @@ def add_dog(request):
                 INSERT INTO Dog (name, sex, altered, ageForMonths, description,
                     microchipID, microchipVendor, surrenderedByAnimalControl,
                     surrenderPhone, surrenderDate, user_email)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_DATE, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, [
                 name, sex, altered, age, description,
-                microchip_id, microchip_vendor, surrendered_by_control, surrender_phone, user_email
+                microchip_id, microchip_vendor, surrendered_by_control, surrender_phone, surrender_date, user_email
             ])
 
             dog_id = cursor.lastrowid
