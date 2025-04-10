@@ -308,9 +308,8 @@ def get_adoption_fee_by_dogid(request, dogID):
             """, [dogID])
             rows = cursor.fetchall()
             dog_breed = [row[0].lower() for row in rows]
-            print(dog_breed)
             # Determine adoption fee
-            if dog_name.lower() == 'sideways' and 'terrier' in dog_breed:
+            if dog_name.lower() == 'sideways' and any('terrier' in breed.lower() for breed in dog_breed):
                 fee = 0
             elif surrendered_by_ac:
                 fee = round(total_expenses * 0.10, 2)

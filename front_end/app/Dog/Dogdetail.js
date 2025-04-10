@@ -50,9 +50,6 @@ export const DogDetail = () => {
                 setBreedType(data['breeds']);
             })
     }, [])
-
-    console.log(data);
-
     const { categoryTotals, grandTotal } = useMemo(() => {
         const totals = {};
         let grandTotal = 0;
@@ -79,7 +76,6 @@ export const DogDetail = () => {
     useEffect(() => {
         loadData();
     }, [dogId]);
-
     const handleVendorChange = (event) => {
         const { name, value } = event.target;
         setEditData((prevData) => ({
@@ -99,7 +95,7 @@ export const DogDetail = () => {
             dogID: dogId,
             breed: breeds
         };
-        const shouldSaveBreed = breeds.some(breed => breed !== "Unknown" || breed !== "Mixed");
+        const shouldSaveBreed = breeds[0] === "Unkown" || breeds[0] === "Mixed";
         const [res1, res2] = await Promise.all([
             postDataToBackEnd('dogs/edit_dog/' + dogId + '/', body),
             shouldSaveBreed ? postDataToBackEnd('dogs/save_breed/', body_breed) : Promise.resolve({ ok: true })
@@ -288,8 +284,8 @@ export const DogDetail = () => {
                             <span>{data != null ? data.surrenderDate : ""}</span>
                         </div>
                         <div className={styles["detail-item"]}>
-                            <label>Surrender Type</label>
-                            <span>{data != null ? data.surrenderDate : ""}</span>
+                            <label>Surrendered By Local Control</label>
+                            <span>{data?.surrenderedByAnimalControl == "1" ? "Yes" : "No"}</span>
                         </div>
                         <div className={styles["detail-item"]}>
                             <label>Surrenderer Phone</label>

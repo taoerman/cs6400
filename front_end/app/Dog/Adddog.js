@@ -128,6 +128,7 @@ export const AddDog = () => {
                                 <option value="">Select Gender</option>
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
+                                <option value="unknown">Unknown</option>
                             </select>
                         </div>
                     </div>
