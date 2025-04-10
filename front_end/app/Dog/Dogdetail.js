@@ -361,7 +361,7 @@ export const DogDetail = () => {
                             }
                         </>
                     )}
-                    {checkAdoptable(data) === 'Yes' && getCookie('loginType') === 3 && (
+                    {checkAdoptable(data) === 'Yes' && getCookie('loginType') === "3" && (
                         <button onClick={() => handleClick(10)}
                             className={styles["primary-btn"]}
                         >
